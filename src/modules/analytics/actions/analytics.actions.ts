@@ -1,16 +1,17 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/supabase/auth";
 
 export async function trackProductViewAction(productId: string, sessionId?: string): Promise<void> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   await supabase.from("product_views").insert({ product_id: productId, user_id: user?.id ?? null, session_id: sessionId ?? null });
 }
 
 export async function trackWhatsappClickAction(productId: string, businessId: string, sessionId?: string): Promise<void> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   await supabase.from("whatsapp_clicks").insert({ product_id: productId, business_id: businessId, user_id: user?.id ?? null, session_id: sessionId ?? null });
 }
 

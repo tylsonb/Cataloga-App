@@ -1,29 +1,22 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ImageUploader, type UploadedImage } from "@/modules/product/components/image-uploader";
 import { CURRENCIES } from "@/lib/constants";
-
-type Result = { success: true } | { success: false; error: string };
+import { FormFeedback } from "@/modules/shared/components/form-feedback";
+import { useFormAction } from "@/modules/shared/hooks/use-form-action.hook";
+import type { Result } from "@/modules/shared/types/result.type";
 
 type DefaultValues = { name?: string; description?: string | null; price?: number; category_id?: string; currency?: string };
 
 export function ProductForm({ onSubmit, categories = [], defaultValues }: { onSubmit: (data: FormData) => Promise<Result | void>; categories?: Array<{ id: string; name: string }>; defaultValues?: DefaultValues }) {
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string>();
   const imageUrlsRef = useRef<UploadedImage[]>([]);
-
-  async function submit(formData: FormData) {
-    setPending(true);
-    setError(undefined);
-    const imageJson = JSON.stringify(imageUrlsRef.current);
-    formData.append("images", imageJson);
-    const result = await onSubmit(formData);
-    setPending(false);
-    if (result && !result.success) setError(result.error);
-  }
+  const { pending, error, submit } = useFormAction((formData) => {
+    formData.append("images", JSON.stringify(imageUrlsRef.current));
+    return onSubmit(formData);
+  });
 
   return (
     <form action={submit} className="space-y-4">
@@ -37,7 +30,7 @@ export function ProductForm({ onSubmit, categories = [], defaultValues }: { onSu
         </select>
       </label>
       <ImageUploader onUpload={(images) => { imageUrlsRef.current = images; }} />
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      <FormFeedback error={error} />
       <Button className="w-full" disabled={pending}>{pending ? "Guardando..." : "Guardar producto"}</Button>
     </form>
   );

@@ -1,13 +1,12 @@
 import { getBusinessByOwnerAction } from "@/modules/business/actions/business.actions";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/supabase/auth";
 import { BusinessInfo } from "@/modules/business/components/business-info";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
 export default async function MiNegocioPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) return null;
   const business = await getBusinessByOwnerAction(user.id);
   if (!business) return <div className="p-10 text-center text-muted-foreground">No tienes un negocio. <Link href="/negocio/crear" className="text-primary underline">Crear uno</Link></div>;

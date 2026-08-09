@@ -1,23 +1,11 @@
 import Link from "next/link";
 import { Store, ArrowLeft } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentUserWithProfile } from "@/lib/supabase/auth";
 import { UserMenu } from "@/components/layout/user-menu";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 
 export async function ProtectedHeader() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  let profile = null;
-  let role = "buyer";
-  if (user) {
-    const [{ data: p }, { data: r }] = await Promise.all([
-      supabase.from("profiles").select("full_name, avatar_url").eq("id", user.id).single(),
-      supabase.from("user_roles").select("role").eq("user_id", user.id).single(),
-    ]);
-    profile = p;
-    role = r?.role ?? "buyer";
-  }
+  const { user, profile, role } = await getCurrentUserWithProfile();
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">

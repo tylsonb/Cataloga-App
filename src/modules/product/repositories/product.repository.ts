@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Product, ProductInsert, ProductUpdate, ProductImage } from "@/modules/product/types/product.types";
+import { withPrimaryImages } from "@/modules/product/utils/product-image.util";
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   const supabase = await createClient();
@@ -16,28 +17,19 @@ export async function getProducts(opts?: { category_id?: string; business_id?: s
   if (opts?.limit) query = query.limit(opts.limit);
   if (opts?.offset) query = query.range(opts.offset, opts.offset + (opts.limit ?? 24) - 1);
   const { data } = await query.order("created_at", { ascending: false });
-  return (data ?? []).map((p) => {
-    const images = (p as Record<string, unknown>).product_images as { url: string }[] | undefined;
-    return { ...p, image_url: images?.[0]?.url } as Product;
-  });
+  return withPrimaryImages(data) as Product[];
 }
 
 export async function getProductsByBusiness(businessId: string): Promise<Product[]> {
   const supabase = await createClient();
   const { data } = await supabase.from("products").select("*, product_images(url)").eq("business_id", businessId).is("deleted_at", null).order("created_at", { ascending: false });
-  return (data ?? []).map((p) => {
-    const images = (p as Record<string, unknown>).product_images as { url: string }[] | undefined;
-    return { ...p, image_url: images?.[0]?.url } as Product;
-  });
+  return withPrimaryImages(data) as Product[];
 }
 
 export async function getRelatedProducts(productId: string, categoryId: string, limit = 4): Promise<Product[]> {
   const supabase = await createClient();
   const { data } = await supabase.from("products").select("*, product_images(url)").eq("category_id", categoryId).neq("id", productId).eq("status", "published").is("deleted_at", null).limit(limit);
-  return (data ?? []).map((p) => {
-    const images = (p as Record<string, unknown>).product_images as { url: string }[] | undefined;
-    return { ...p, image_url: images?.[0]?.url } as Product;
-  });
+  return withPrimaryImages(data) as Product[];
 }
 
 export async function createProduct(input: ProductInsert): Promise<Product | null> {

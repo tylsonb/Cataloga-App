@@ -7,17 +7,22 @@ import { createClient } from "@/lib/supabase/client";
 import { updateProfileAction } from "@/modules/profile/actions/profile.actions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera } from "lucide-react";
-
-type Result = { success: true } | { success: false; error: string };
+import { FormFeedback } from "@/modules/shared/components/form-feedback";
+import { useFormAction } from "@/modules/shared/hooks/use-form-action.hook";
 
 type DefaultValues = { full_name?: string; phone?: string | null; avatar_url?: string | null; email?: string };
 
 export function ProfileForm({ userId, defaultValues }: { userId: string; defaultValues?: DefaultValues }) {
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string>();
-  const [success, setSuccess] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(defaultValues?.avatar_url ?? "");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { pending, error, message, setError, setPending, submit } = useFormAction(
+    (formData) => updateProfileAction(userId, {
+      full_name: formData.get("full_name") as string,
+      phone: (formData.get("phone") as string) || null,
+      avatar_url: avatarUrl || null,
+    }),
+    { successMessage: "Perfil actualizado correctamente" }
+  );
 
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -37,20 +42,6 @@ export function ProfileForm({ userId, defaultValues }: { userId: string; default
     } finally {
       setPending(false);
     }
-  }
-
-  async function submit(formData: FormData) {
-    setPending(true);
-    setError(undefined);
-    setSuccess(false);
-    const result = await updateProfileAction(userId, {
-      full_name: formData.get("full_name") as string,
-      phone: (formData.get("phone") as string) || null,
-      avatar_url: avatarUrl || null,
-    }) as Result;
-    setPending(false);
-    if (!result.success) setError(result.error);
-    else setSuccess(true);
   }
 
   const initials = (defaultValues?.full_name ?? "?").charAt(0).toUpperCase();
@@ -88,8 +79,7 @@ export function ProfileForm({ userId, defaultValues }: { userId: string; default
         <Input className="mt-1" name="phone" defaultValue={defaultValues?.phone ?? ""} placeholder="+56912345678" />
       </label>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
-      {success && <p className="text-sm text-green-600">Perfil actualizado correctamente</p>}
+      <FormFeedback error={error} message={message} />
       <Button className="w-full" disabled={pending}>{pending ? "Guardando..." : "Guardar cambios"}</Button>
     </form>
   );

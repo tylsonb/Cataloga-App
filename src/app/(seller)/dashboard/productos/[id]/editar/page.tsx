@@ -2,24 +2,21 @@ import { ProductForm } from "@/modules/product/components/product-form";
 import { updateProductAction } from "@/modules/product/actions/product.actions";
 import { createClient } from "@/lib/supabase/server";
 import { notFound, redirect } from "next/navigation";
+import { requireOwnedBusiness } from "@/modules/business/utils/owner-guard.util";
+import { getActiveCategories } from "@/modules/shared/repositories/category.repository";
 
 export const dynamic = "force-dynamic";
 
 export default async function EditarProductoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const business = await requireOwnedBusiness();
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  const { data: business } = await supabase.from("businesses").select("id").eq("owner_id", user.id).single();
-  if (!business) redirect("/negocio/crear");
 
   const { data: product } = await supabase.from("products").select("id, name, description, price, currency, category_id").eq("id", id).eq("business_id", business.id).is("deleted_at", null).single();
   if (!product) notFound();
 
   async function submit(formData: FormData) {
     "use server";
-    if (!business) return { success: false as const, error: "No se encontró el negocio" };
     const result = await updateProductAction(id, {
       name: formData.get("name"),
       description: formData.get("description") || undefined,
@@ -31,12 +28,12 @@ export default async function EditarProductoPage({ params }: { params: Promise<{
     return result;
   }
 
-  const { data: categories } = await supabase.from("categories").select("id, name").eq("is_active", true).order("sort_order");
+  const categories = await getActiveCategories();
 
   return (
     <div className="container py-10 max-w-2xl">
       <h1 className="text-3xl font-bold mb-8">Editar producto</h1>
-      <ProductForm onSubmit={submit} categories={categories ?? []} defaultValues={product} />
+      <ProductForm onSubmit={submit} categories={categories} defaultValues={product} />
     </div>
   );
 }

@@ -1,5 +1,8 @@
+import { CURRENCIES } from "@/lib/constants";
+
+const CURRENCY_SYMBOLS: Record<string, string> = Object.fromEntries(CURRENCIES.map((c) => [c.code, c.symbol]));
+
 export function formatPrice(price: number, currency = "CLP"): string {
-  const symbols: Record<string, string> = { CLP: "$", USD: "US$", EUR: "€", ARS: "$", MXN: "$", COP: "$", PEN: "S/" };
-  const symbol = symbols[currency] ?? "$";
+  const symbol = CURRENCY_SYMBOLS[currency] ?? "$";
   return `${symbol}${price.toLocaleString("es-CL")}`;
 }

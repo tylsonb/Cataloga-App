@@ -1,12 +1,13 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/supabase/auth";
 import type { DashboardStats } from "@/modules/dashboard/types/dashboard.types";
 
 export async function getDashboardStatsAction(): Promise<DashboardStats | null> {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) return null;
+  const supabase = await createClient();
 
   const { data: business } = await supabase.from("businesses").select("id").eq("owner_id", user.id).single();
   if (!business) return null;

@@ -3,6 +3,7 @@
 import { searchSchema } from "@/modules/search/schemas/search.schema";
 import type { SearchResult } from "@/modules/search/types/search.types";
 import { createClient } from "@/lib/supabase/server";
+import { getPrimaryImageUrl } from "@/modules/product/utils/product-image.util";
 
 export async function searchProductsAction(input: unknown): Promise<{ items: SearchResult[]; total: number }> {
   const parsed = searchSchema.safeParse(input);
@@ -23,16 +24,13 @@ export async function searchProductsAction(input: unknown): Promise<{ items: Sea
   const offset = (page - 1) * pageSize;
   query = query.range(offset, offset + pageSize - 1);
   const { data, count } = await query;
-  const items: SearchResult[] = (data ?? []).map((p) => {
-    const images = (p as Record<string, unknown>).product_images as { url: string }[] | undefined;
-    return {
-      id: p.id,
-      name: p.name,
-      slug: p.slug,
-      price: p.price,
-      currency: p.currency,
-      image_url: images?.[0]?.url,
-    };
-  });
+  const items: SearchResult[] = (data ?? []).map((p) => ({
+    id: p.id,
+    name: p.name,
+    slug: p.slug,
+    price: p.price,
+    currency: p.currency,
+    image_url: getPrimaryImageUrl(p),
+  }));
   return { items, total: count ?? 0 };
 }

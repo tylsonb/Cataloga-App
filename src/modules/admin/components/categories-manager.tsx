@@ -1,18 +1,16 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createCategoryAction } from "@/modules/admin/actions/admin.actions";
+import { DataTable } from "@/modules/shared/components/data-table";
+import { FormFeedback } from "@/modules/shared/components/form-feedback";
+import { useFormAction } from "@/modules/shared/hooks/use-form-action.hook";
 
 export function CategoriesManager({ categories }: { categories: Array<{ id: string; name: string; slug: string }> }) {
-  const [pending, setPending] = useState(false);
-
-  async function submit(formData: FormData) {
-    setPending(true);
-    await createCategoryAction({ name: formData.get("name"), slug: formData.get("slug") });
-    setPending(false);
-  }
+  const { pending, error, submit } = useFormAction((formData) =>
+    createCategoryAction({ name: formData.get("name"), slug: formData.get("slug") })
+  );
 
   return (
     <div className="space-y-6">
@@ -21,14 +19,12 @@ export function CategoriesManager({ categories }: { categories: Array<{ id: stri
         <Input name="slug" placeholder="slug" required />
         <Button disabled={pending}>Agregar</Button>
       </form>
-      <table className="w-full text-sm">
-        <thead><tr className="border-b text-left"><th className="py-2">Nombre</th><th className="py-2">Slug</th></tr></thead>
-        <tbody>
-          {categories.map((c) => (
-            <tr key={c.id} className="border-b"><td className="py-2">{c.name}</td><td className="py-2">{c.slug}</td></tr>
-          ))}
-        </tbody>
-      </table>
+      <FormFeedback error={error} />
+      <DataTable headers={["Nombre", "Slug"]}>
+        {categories.map((c) => (
+          <tr key={c.id} className="border-b"><td className="py-2">{c.name}</td><td className="py-2">{c.slug}</td></tr>
+        ))}
+      </DataTable>
     </div>
   );
 }

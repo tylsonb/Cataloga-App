@@ -1,14 +1,13 @@
 import { BusinessForm } from "@/modules/business/components/business-form";
 import { createBusinessAction } from "@/modules/business/actions/business.actions";
-import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { requireUser } from "@/lib/supabase/auth";
+import { getActiveCategories } from "@/modules/shared/repositories/category.repository";
 
 export const dynamic = "force-dynamic";
 
 export default async function CrearNegocioPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  await requireUser();
 
   async function submit(formData: FormData) {
     "use server";
@@ -23,13 +22,13 @@ export default async function CrearNegocioPage() {
     return result;
   }
 
-  const { data: categories } = await supabase.from("categories").select("id, name").eq("is_active", true).order("sort_order");
+  const categories = await getActiveCategories();
 
   return (
     <section className="container py-10">
       <h1 className="text-3xl font-bold">Crear tu negocio</h1>
       <div className="mt-8 max-w-md">
-        <BusinessForm onSubmit={submit} categories={categories ?? []} />
+        <BusinessForm onSubmit={submit} categories={categories} />
       </div>
     </section>
   );

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Favorite } from "@/modules/favorites/types/favorites.types";
+import { getPrimaryImageUrl } from "@/modules/product/utils/product-image.util";
 
 export async function toggleFavorite(userId: string, productId: string): Promise<boolean> {
   const supabase = await createClient();
@@ -19,10 +20,9 @@ export async function getFavoritesWithProducts(userId: string): Promise<Array<{ 
     const products = Array.isArray(item.products) ? item.products[0] : item.products;
     if (!products) return { product_id: item.product_id, products: null };
     const p = products as { id: string; name: string; slug: string; price: number; currency: string; product_images?: { url: string }[] };
-    const images = p.product_images as { url: string }[] | undefined;
     return {
       product_id: item.product_id,
-      products: { id: p.id, name: p.name, slug: p.slug, price: p.price, currency: p.currency, image_url: images?.[0]?.url ?? null },
+      products: { id: p.id, name: p.name, slug: p.slug, price: p.price, currency: p.currency, image_url: getPrimaryImageUrl(p) ?? null },
     };
   }) as Array<{ product_id: string; products: { id: string; name: string; slug: string; price: number; currency: string; image_url: string | null } | null }>;
 }
