@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /login
+Disallow: /registro
+Disallow: /actualizar-password
+Disallow: /recuperar-password
+Disallow: /perfil
+Disallow: /favoritos
+
+Sitemap: http://localhost:3000/sitemap.xml
