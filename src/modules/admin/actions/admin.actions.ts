@@ -1,10 +1,22 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/guards";
+import { createCategorySchema, updateCategorySchema } from "@/modules/admin/schemas/category.schema";
 import type { Result } from "@/modules/shared/types/result.type";
 import type { AdminStats } from "@/modules/admin/types/admin.types";
 
+const FORBIDDEN: Result = { success: false, error: "No autorizado" };
+
+const EXPORTABLE_TABLES = ["profiles", "businesses", "products", "categories", "subcategories"] as const;
+type ExportableTable = (typeof EXPORTABLE_TABLES)[number];
+
+function isExportableTable(table: string): table is ExportableTable {
+  return (EXPORTABLE_TABLES as readonly string[]).includes(table);
+}
+
 export async function getAdminStatsAction(): Promise<AdminStats | null> {
+  if (!(await requireAdmin())) return null;
   const supabase = await createClient();
   const [usersRes, businessesRes, productsRes, publishedRes] = await Promise.all([
     supabase.from("profiles").select("*", { count: "exact", head: true }),
@@ -21,6 +33,7 @@ export async function getAdminStatsAction(): Promise<AdminStats | null> {
 }
 
 export async function toggleUserStatusAction(userId: string, active: boolean): Promise<Result> {
+  if (!(await requireAdmin())) return FORBIDDEN;
   const supabase = await createClient();
   const { error } = await supabase.from("profiles").update({ is_active: active, updated_at: new Date().toISOString() }).eq("id", userId);
   if (error) return { success: false, error: "No fue posible actualizar el usuario" };
@@ -28,6 +41,7 @@ export async function toggleUserStatusAction(userId: string, active: boolean): P
 }
 
 export async function toggleBusinessStatusAdminAction(businessId: string, active: boolean): Promise<Result> {
+  if (!(await requireAdmin())) return FORBIDDEN;
   const supabase = await createClient();
   const { error } = await supabase.from("businesses").update({ is_active: active }).eq("id", businessId);
   if (error) return { success: false, error: "No fue posible actualizar el negocio" };
@@ -35,6 +49,7 @@ export async function toggleBusinessStatusAdminAction(businessId: string, active
 }
 
 export async function toggleProductStatusAction(productId: string, status: "published" | "draft"): Promise<Result> {
+  if (!(await requireAdmin())) return FORBIDDEN;
   const supabase = await createClient();
   const { error } = await supabase.from("products").update({ status }).eq("id", productId);
   if (error) return { success: false, error: "No fue posible actualizar el producto" };
@@ -42,6 +57,7 @@ export async function toggleProductStatusAction(productId: string, status: "publ
 }
 
 export async function deleteProductAdminAction(productId: string): Promise<Result> {
+  if (!(await requireAdmin())) return FORBIDDEN;
   const supabase = await createClient();
   const { error } = await supabase.from("products").update({ deleted_at: new Date().toISOString() }).eq("id", productId);
   if (error) return { success: false, error: "No fue posible eliminar el producto" };
@@ -49,6 +65,7 @@ export async function deleteProductAdminAction(productId: string): Promise<Resul
 }
 
 export async function deleteBusinessAdminAction(businessId: string): Promise<Result> {
+  if (!(await requireAdmin())) return FORBIDDEN;
   const supabase = await createClient();
   const { error } = await supabase.from("businesses").update({ is_active: false }).eq("id", businessId);
   if (error) return { success: false, error: "No fue posible desactivar el negocio" };
@@ -56,24 +73,33 @@ export async function deleteBusinessAdminAction(businessId: string): Promise<Res
 }
 
 export async function createCategoryAction(input: unknown): Promise<Result> {
+  if (!(await requireAdmin())) return FORBIDDEN;
+  const parsed = createCategorySchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "Revisa los datos ingresados" };
   const supabase = await createClient();
-  const { error } = await supabase.from("categories").insert(input as never);
+  const { error } = await supabase.from("categories").insert(parsed.data as never);
   return error ? { success: false, error: "No fue posible crear la categoría" } : { success: true };
 }
 
 export async function updateCategoryAction(id: string, input: unknown): Promise<Result> {
+  if (!(await requireAdmin())) return FORBIDDEN;
+  const parsed = updateCategorySchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "Revisa los datos ingresados" };
   const supabase = await createClient();
-  const { error } = await supabase.from("categories").update(input as never).eq("id", id);
+  const { error } = await supabase.from("categories").update(parsed.data as never).eq("id", id);
   return error ? { success: false, error: "No fue posible actualizar la categoría" } : { success: true };
 }
 
 export async function deleteCategoryAction(id: string): Promise<Result> {
+  if (!(await requireAdmin())) return FORBIDDEN;
   const supabase = await createClient();
   const { error } = await supabase.from("categories").delete().eq("id", id);
   return error ? { success: false, error: "No fue posible eliminar la categoría" } : { success: true };
 }
 
 export async function exportDataAction(table: string): Promise<Result & { data?: unknown }> {
+  if (!(await requireAdmin())) return FORBIDDEN;
+  if (!isExportableTable(table)) return { success: false, error: "Tabla no permitida" };
   const supabase = await createClient();
   const { data, error } = await supabase.from(table).select("*");
   if (error) return { success: false, error: "No fue posible exportar los datos" };

@@ -3,29 +3,40 @@
 import { createProductSchema, updateProductSchema } from "@/modules/product/schemas/product.schema";
 import { createProduct, updateProduct, deleteProduct, toggleProductFeatured, getProductBySlug, getProducts, getProductsByBusiness, getRelatedProducts } from "@/modules/product/repositories/product.repository";
 import { slugify } from "@/modules/shared/utils/slug.util";
+import { getCurrentUser, isAdmin, ownsBusiness, ownsProduct } from "@/lib/auth/guards";
 import type { Result } from "@/modules/shared/types/result.type";
 
+const FORBIDDEN: Result = { success: false, error: "No autorizado" };
+
 export async function createProductAction(input: unknown): Promise<Result> {
+  if (!(await getCurrentUser())) return FORBIDDEN;
   const parsed = createProductSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Revisa los datos ingresados" };
+  if (!(await ownsBusiness(parsed.data.business_id))) return FORBIDDEN;
   const slug = slugify(parsed.data.name);
-  const product = await createProduct({ ...parsed.data, slug } as never);
+  const { is_featured: _isFeatured, ...safeInput } = parsed.data;
+  const product = await createProduct({ ...safeInput, slug } as never);
   return product ? { success: true } : { success: false, error: "No fue posible crear el producto" };
 }
 
 export async function updateProductAction(id: string, input: unknown): Promise<Result> {
   const parsed = updateProductSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Revisa los datos ingresados" };
-  const product = await updateProduct(id, parsed.data as never);
+  if (!(await ownsProduct(id)) && !(await isAdmin())) return FORBIDDEN;
+  if (parsed.data.business_id && !(await ownsBusiness(parsed.data.business_id))) return FORBIDDEN;
+  const { is_featured: _isFeatured, ...safeInput } = parsed.data;
+  const product = await updateProduct(id, safeInput as never);
   return product ? { success: true } : { success: false, error: "No fue posible actualizar el producto" };
 }
 
 export async function deleteProductAction(id: string): Promise<Result> {
+  if (!(await ownsProduct(id)) && !(await isAdmin())) return FORBIDDEN;
   await deleteProduct(id);
   return { success: true };
 }
 
 export async function toggleProductFeaturedAction(id: string, isFeatured: boolean): Promise<Result> {
+  if (!(await isAdmin())) return FORBIDDEN;
   await toggleProductFeatured(id, isFeatured);
   return { success: true };
 }

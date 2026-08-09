@@ -7,6 +7,12 @@ import { createClient } from "@/lib/supabase/client";
 export type UploadedImage = { url: string; alt_text: string };
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
+const ALLOWED_TYPES: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/avif": "avif",
+};
 
 export function ImageUploader({ onUpload, maxImages = 5 }: { onUpload?: (images: UploadedImage[]) => void; maxImages?: number }) {
   const [previews, setPreviews] = useState<{ localUrl: string; uploaded: UploadedImage | null }[]>([]);
@@ -24,15 +30,23 @@ export function ImageUploader({ onUpload, maxImages = 5 }: { onUpload?: (images:
       return;
     }
 
+    const invalid = files.filter((f) => !ALLOWED_TYPES[f.type]);
+    if (invalid.length > 0) {
+      setError("Solo se permiten imágenes JPG, PNG, WEBP o AVIF.");
+      return;
+    }
+
     setUploading(true);
     const supabase = createClient();
 
     const newPreviews: { localUrl: string; uploaded: UploadedImage | null }[] = [];
     for (const file of files) {
       const localUrl = URL.createObjectURL(file);
-      const ext = file.name.split(".").pop();
+      const ext = ALLOWED_TYPES[file.type];
       const fileName = `${crypto.randomUUID()}.${ext}`;
-      const { error } = await supabase.storage.from("product-images").upload(fileName, file);
+      const { error } = await supabase.storage
+        .from("product-images")
+        .upload(fileName, file, { contentType: file.type });
       if (!error) {
         const { data: { publicUrl } } = supabase.storage.from("product-images").getPublicUrl(fileName);
         newPreviews.push({ localUrl, uploaded: { url: publicUrl, alt_text: file.name.replace(/\.[^.]+$/, "") } });

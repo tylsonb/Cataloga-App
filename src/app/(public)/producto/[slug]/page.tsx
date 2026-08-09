@@ -11,6 +11,7 @@ import { Breadcrumb } from "@/modules/shared/components/breadcrumb";
 import { ProductViewTracker } from "@/modules/analytics/components/product-view-tracker";
 import { createClient } from "@/lib/supabase/server";
 import { SITE_URL } from "@/lib/constants";
+import { serializeJsonLd } from "@/lib/json-ld";
 
 export const dynamic = "force-dynamic";
 
@@ -61,8 +62,8 @@ export default async function ProductoPage({ params }: { params: Promise<{ slug:
       <div className="mt-12">
         <ProductRelated products={related as never} />
       </div>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@type": "Product", name: product.name, description: product.description ?? undefined, offers: { "@type": "Offer", price: product.price, priceCurrency: product.currency, availability: product.is_available ? "https://schema.org/InStock" : "https://schema.org/OutOfStock" }, brand: { "@type": "Brand", name: business?.name ?? "Catáloga" } }) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Inicio", item: SITE_URL }, { "@type": "ListItem", position: 2, name: business?.name ?? "Negocio", item: `${SITE_URL}/negocio/${business?.slug}` }, { "@type": "ListItem", position: 3, name: product.name, item: productUrl }] }) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd({ "@context": "https://schema.org", "@type": "Product", name: product.name, description: product.description ?? undefined, offers: { "@type": "Offer", price: product.price, priceCurrency: product.currency, availability: product.is_available ? "https://schema.org/InStock" : "https://schema.org/OutOfStock" }, brand: { "@type": "Brand", name: business?.name ?? "Catáloga" } }) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd({ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Inicio", item: SITE_URL }, { "@type": "ListItem", position: 2, name: business?.name ?? "Negocio", item: `${SITE_URL}/negocio/${business?.slug}` }, { "@type": "ListItem", position: 3, name: product.name, item: productUrl }] }) }} />
       <ProductViewTracker productId={product.id} />
     </section>
   );

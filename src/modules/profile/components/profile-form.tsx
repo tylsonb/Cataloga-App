@@ -10,6 +10,15 @@ import { Camera } from "lucide-react";
 
 type Result = { success: true } | { success: false; error: string };
 
+const ALLOWED_AVATAR_TYPES: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/avif": "avif",
+};
+
+const MAX_AVATAR_SIZE = 2 * 1024 * 1024;
+
 type DefaultValues = { full_name?: string; phone?: string | null; avatar_url?: string | null; email?: string };
 
 export function ProfileForm({ userId, defaultValues }: { userId: string; defaultValues?: DefaultValues }) {
@@ -22,13 +31,21 @@ export function ProfileForm({ userId, defaultValues }: { userId: string; default
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    const ext = ALLOWED_AVATAR_TYPES[file.type];
+    if (!ext) {
+      setError("Solo se permiten imágenes JPG, PNG, WEBP o AVIF.");
+      return;
+    }
+    if (file.size > MAX_AVATAR_SIZE) {
+      setError("La imagen debe pesar máximo 2 MB.");
+      return;
+    }
     setPending(true);
     setError(undefined);
     try {
       const supabase = createClient();
-      const ext = file.name.split(".").pop();
       const path = `${userId}/avatar.${ext}`;
-      const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+      const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
       if (uploadError) throw uploadError;
       const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
       setAvatarUrl(publicUrl);

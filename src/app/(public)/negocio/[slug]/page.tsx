@@ -5,6 +5,7 @@ import { getProductsByBusinessAction } from "@/modules/product/actions/product.a
 import { BusinessInfo } from "@/modules/business/components/business-info";
 import { ProductGrid } from "@/modules/product/components/product-grid";
 import { SITE_URL } from "@/lib/constants";
+import { serializeJsonLd } from "@/lib/json-ld";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +37,7 @@ export default async function NegocioPage({ params }: { params: Promise<{ slug: 
         <h2 className="mb-4 text-xl font-bold">Productos</h2>
         <ProductGrid products={products as never} />
       </div>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(businessJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(businessJsonLd) }} />
     </section>
   );
 }
