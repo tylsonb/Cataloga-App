@@ -20,9 +20,12 @@ export function ProductForm({ onSubmit, categories = [], defaultValues }: { onSu
     setError(undefined);
     const imageJson = JSON.stringify(imageUrlsRef.current);
     formData.append("images", imageJson);
-    const result = await onSubmit(formData);
-    setPending(false);
-    if (result && !result.success) setError(result.error);
+    try {
+      const result = await onSubmit(formData);
+      if (result && !result.success) setError(result.error);
+    } finally {
+      setPending(false);
+    }
   }
 
   return (

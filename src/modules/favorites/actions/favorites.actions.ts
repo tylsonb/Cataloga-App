@@ -8,8 +8,12 @@ export async function toggleFavoriteAction(productId: string): Promise<Result & 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "No hay sesión activa" };
-  const favorited = await toggleFavorite(user.id, productId);
-  return { success: true, favorited };
+  try {
+    const favorited = await toggleFavorite(user.id, productId);
+    return { success: true, favorited };
+  } catch {
+    return { success: false, error: "No fue posible actualizar tus favoritos" };
+  }
 }
 
 export async function getFavoritesAction() {

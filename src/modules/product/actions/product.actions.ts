@@ -9,25 +9,41 @@ export async function createProductAction(input: unknown): Promise<Result> {
   const parsed = createProductSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Revisa los datos ingresados" };
   const slug = slugify(parsed.data.name);
-  const product = await createProduct({ ...parsed.data, slug } as never);
-  return product ? { success: true } : { success: false, error: "No fue posible crear el producto" };
+  try {
+    await createProduct({ ...parsed.data, slug } as never);
+    return { success: true };
+  } catch {
+    return { success: false, error: "No fue posible crear el producto" };
+  }
 }
 
 export async function updateProductAction(id: string, input: unknown): Promise<Result> {
   const parsed = updateProductSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Revisa los datos ingresados" };
-  const product = await updateProduct(id, parsed.data as never);
-  return product ? { success: true } : { success: false, error: "No fue posible actualizar el producto" };
+  try {
+    await updateProduct(id, parsed.data as never);
+    return { success: true };
+  } catch {
+    return { success: false, error: "No fue posible actualizar el producto" };
+  }
 }
 
 export async function deleteProductAction(id: string): Promise<Result> {
-  await deleteProduct(id);
-  return { success: true };
+  try {
+    await deleteProduct(id);
+    return { success: true };
+  } catch {
+    return { success: false, error: "No fue posible eliminar el producto" };
+  }
 }
 
 export async function toggleProductFeaturedAction(id: string, isFeatured: boolean): Promise<Result> {
-  await toggleProductFeatured(id, isFeatured);
-  return { success: true };
+  try {
+    await toggleProductFeatured(id, isFeatured);
+    return { success: true };
+  } catch {
+    return { success: false, error: "No fue posible destacar el producto" };
+  }
 }
 
 export async function getProductBySlugAction(slug: string) {

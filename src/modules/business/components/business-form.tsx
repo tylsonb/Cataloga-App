@@ -15,9 +15,12 @@ export function BusinessForm({ onSubmit, categories = [], defaultValues }: { onS
   async function submit(formData: FormData) {
     setPending(true);
     setError(undefined);
-    const result = await onSubmit(formData);
-    setPending(false);
-    if (result && !result.success) setError(result.error);
+    try {
+      const result = await onSubmit(formData);
+      if (result && !result.success) setError(result.error);
+    } finally {
+      setPending(false);
+    }
   }
 
   return (

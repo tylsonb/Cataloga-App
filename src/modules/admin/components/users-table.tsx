@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { toggleUserStatusAction } from "@/modules/admin/actions/admin.actions";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/modules/shared/hooks/use-toast";
 
 export function UsersTable({ users }: { users: Array<{ id: string; email: string; full_name: string; role: string; created_at: string; is_active?: boolean }> }) {
   const [pending, startTransition] = useTransition();
@@ -23,7 +24,11 @@ export function UsersTable({ users }: { users: Array<{ id: string; email: string
                 variant="outline"
                 disabled={pending}
                 onClick={() => startTransition(async () => {
-                  await toggleUserStatusAction(u.id, u.is_active === false);
+                  const result = await toggleUserStatusAction(u.id, u.is_active === false);
+                  if (!result.success) {
+                    toast({ title: "Error", description: result.error, variant: "destructive" });
+                    return;
+                  }
                   window.location.reload();
                 })}
               >

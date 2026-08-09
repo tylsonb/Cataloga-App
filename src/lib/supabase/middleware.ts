@@ -1,5 +1,7 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { logError } from "@/lib/logger";
+import { isNoRowsError } from "@/lib/errors";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -27,9 +29,15 @@ export async function updateSession(request: NextRequest) {
 
   const {
     data: { user },
+    error: userError,
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
+
+  // A missing session is expected for anonymous visitors; anything else is a real failure.
+  if (userError && userError.status !== 401 && userError.name !== "AuthSessionMissingError") {
+    logError("middleware.getUser", userError, { pathname });
+  }
 
   const protectedRoutes = ["/favoritos", "/perfil", "/dashboard", "/negocio/crear"];
   const adminRoutes = ["/admin"];
@@ -59,11 +67,15 @@ export async function updateSession(request: NextRequest) {
       url.searchParams.set("redirect", pathname);
       return NextResponse.redirect(url);
     }
-    const { data: roleData } = await supabase
+    const { data: roleData, error: roleError } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", user.id)
       .single();
+
+    if (roleError && !isNoRowsError(roleError)) {
+      logError("middleware.adminRoleLookup", roleError, { userId: user.id, pathname });
+    }
 
     if (roleData?.role !== "admin") {
       return NextResponse.redirect(new URL("/", request.url));

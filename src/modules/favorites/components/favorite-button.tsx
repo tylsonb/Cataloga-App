@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Heart } from "lucide-react";
 import { toggleFavoriteAction } from "@/modules/favorites/actions/favorites.actions";
+import { toast } from "@/modules/shared/hooks/use-toast";
 
 export function FavoriteButton({ productId, initialFavorited = false }: { productId: string; initialFavorited?: boolean }) {
   const [favorited, setFavorited] = useState(initialFavorited);
@@ -11,7 +12,11 @@ export function FavoriteButton({ productId, initialFavorited = false }: { produc
   function toggle() {
     startTransition(async () => {
       const result = await toggleFavoriteAction(productId);
-      if (result.success) setFavorited(result.favorited ?? false);
+      if (!result.success) {
+        toast({ title: "Error", description: result.error, variant: "destructive" });
+        return;
+      }
+      setFavorited(result.favorited ?? false);
     });
   }
 

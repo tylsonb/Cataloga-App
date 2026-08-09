@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
+import { logError } from "@/lib/logger";
 import { updateProfileAction } from "@/modules/profile/actions/profile.actions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera } from "lucide-react";
@@ -32,7 +33,8 @@ export function ProfileForm({ userId, defaultValues }: { userId: string; default
       if (uploadError) throw uploadError;
       const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
       setAvatarUrl(publicUrl);
-    } catch {
+    } catch (uploadError) {
+      logError("profile.avatarUpload", uploadError, { userId });
       setError("No fue posible subir la imagen");
     } finally {
       setPending(false);
@@ -43,14 +45,17 @@ export function ProfileForm({ userId, defaultValues }: { userId: string; default
     setPending(true);
     setError(undefined);
     setSuccess(false);
-    const result = await updateProfileAction(userId, {
-      full_name: formData.get("full_name") as string,
-      phone: (formData.get("phone") as string) || null,
-      avatar_url: avatarUrl || null,
-    }) as Result;
-    setPending(false);
-    if (!result.success) setError(result.error);
-    else setSuccess(true);
+    try {
+      const result = await updateProfileAction(userId, {
+        full_name: formData.get("full_name") as string,
+        phone: (formData.get("phone") as string) || null,
+        avatar_url: avatarUrl || null,
+      }) as Result;
+      if (!result.success) setError(result.error);
+      else setSuccess(true);
+    } finally {
+      setPending(false);
+    }
   }
 
   const initials = (defaultValues?.full_name ?? "?").charAt(0).toUpperCase();

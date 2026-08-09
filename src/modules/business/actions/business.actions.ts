@@ -15,22 +15,32 @@ export async function createBusinessAction(input: unknown): Promise<Result> {
   if (!parsed.success) return { success: false, error: "Revisa los datos ingresados" };
 
   const slug = slugify(parsed.data.name);
-  const business = await createBusiness({ ...parsed.data, slug, owner_id: user.id } as never);
-  if (!business) return { success: false, error: "No fue posible crear el negocio" };
-
-  return { success: true };
+  try {
+    await createBusiness({ ...parsed.data, slug, owner_id: user.id } as never);
+    return { success: true };
+  } catch {
+    return { success: false, error: "No fue posible crear el negocio" };
+  }
 }
 
 export async function updateBusinessAction(id: string, input: unknown): Promise<Result> {
   const parsed = updateBusinessSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Revisa los datos ingresados" };
-  const business = await updateBusiness(id, parsed.data as never);
-  return business ? { success: true } : { success: false, error: "No fue posible actualizar el negocio" };
+  try {
+    await updateBusiness(id, parsed.data as never);
+    return { success: true };
+  } catch {
+    return { success: false, error: "No fue posible actualizar el negocio" };
+  }
 }
 
 export async function toggleBusinessStatusAction(id: string, isActive: boolean): Promise<Result> {
-  await toggleBusinessStatus(id, isActive);
-  return { success: true };
+  try {
+    await toggleBusinessStatus(id, isActive);
+    return { success: true };
+  } catch {
+    return { success: false, error: "No fue posible actualizar el estado del negocio" };
+  }
 }
 
 export async function getBusinessBySlugAction(slug: string) {

@@ -4,11 +4,15 @@ import { MessageCircle } from "lucide-react";
 import { buildWhatsappUrl } from "@/modules/shared/utils/whatsapp.util";
 import { trackWhatsappClickAction } from "@/modules/analytics/actions/analytics.actions";
 import { getSessionId } from "@/modules/analytics/utils/session.util";
+import { logError } from "@/lib/logger";
 
 export function WhatsAppButton({ phone, productName, productId, businessId }: { phone: string; productName?: string; productId?: string; businessId?: string }) {
   function handleClick() {
     if (productId && businessId) {
-      trackWhatsappClickAction(productId, businessId, getSessionId());
+      // Best-effort tracking: never block the outbound link, but never swallow silently either.
+      trackWhatsappClickAction(productId, businessId, getSessionId()).catch((error: unknown) =>
+        logError("analytics.trackWhatsappClick.client", error, { productId, businessId })
+      );
     }
   }
 

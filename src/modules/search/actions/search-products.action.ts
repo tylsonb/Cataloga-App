@@ -3,10 +3,15 @@
 import { searchSchema } from "@/modules/search/schemas/search.schema";
 import type { SearchResult } from "@/modules/search/types/search.types";
 import { createClient } from "@/lib/supabase/server";
+import { dbError } from "@/lib/errors";
+import { logWarn } from "@/lib/logger";
 
 export async function searchProductsAction(input: unknown): Promise<{ items: SearchResult[]; total: number }> {
   const parsed = searchSchema.safeParse(input);
-  if (!parsed.success) return { items: [], total: 0 };
+  if (!parsed.success) {
+    logWarn("search.searchProducts", "invalid search input", { issues: parsed.error.issues.map((i) => i.path.join(".")).join(",") });
+    return { items: [], total: 0 };
+  }
   const { q, category_id, city, minPrice, maxPrice, sort, page, pageSize } = parsed.data;
   const supabase = await createClient();
   let query = supabase.from("products").select("id, name, slug, price, currency, status, deleted_at, category_id, business_id, product_images(url)", { count: "exact" }).eq("status", "published").is("deleted_at", null);
@@ -22,7 +27,8 @@ export async function searchProductsAction(input: unknown): Promise<{ items: Sea
   }
   const offset = (page - 1) * pageSize;
   query = query.range(offset, offset + pageSize - 1);
-  const { data, count } = await query;
+  const { data, count, error } = await query;
+  if (error) throw dbError("search.searchProducts", error, { q, category_id });
   const items: SearchResult[] = (data ?? []).map((p) => {
     const images = (p as Record<string, unknown>).product_images as { url: string }[] | undefined;
     return {

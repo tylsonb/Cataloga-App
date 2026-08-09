@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { toggleBusinessStatusAdminAction } from "@/modules/admin/actions/admin.actions";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/modules/shared/hooks/use-toast";
 
 export function BusinessesTable({ businesses }: { businesses: Array<{ id: string; name: string; is_active: boolean; city?: string | null }> }) {
   const [pending, startTransition] = useTransition();
@@ -22,7 +23,11 @@ export function BusinessesTable({ businesses }: { businesses: Array<{ id: string
                 variant="outline"
                 disabled={pending}
                 onClick={() => startTransition(async () => {
-                  await toggleBusinessStatusAdminAction(b.id, !b.is_active);
+                  const result = await toggleBusinessStatusAdminAction(b.id, !b.is_active);
+                  if (!result.success) {
+                    toast({ title: "Error", description: result.error, variant: "destructive" });
+                    return;
+                  }
                   window.location.reload();
                 })}
               >

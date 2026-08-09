@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Upload, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { logError } from "@/lib/logger";
 
 export type UploadedImage = { url: string; alt_text: string };
 
@@ -28,17 +29,24 @@ export function ImageUploader({ onUpload, maxImages = 5 }: { onUpload?: (images:
     const supabase = createClient();
 
     const newPreviews: { localUrl: string; uploaded: UploadedImage | null }[] = [];
+    const failed: string[] = [];
     for (const file of files) {
       const localUrl = URL.createObjectURL(file);
       const ext = file.name.split(".").pop();
       const fileName = `${crypto.randomUUID()}.${ext}`;
-      const { error } = await supabase.storage.from("product-images").upload(fileName, file);
-      if (!error) {
-        const { data: { publicUrl } } = supabase.storage.from("product-images").getPublicUrl(fileName);
-        newPreviews.push({ localUrl, uploaded: { url: publicUrl, alt_text: file.name.replace(/\.[^.]+$/, "") } });
-      } else {
+      const { error: uploadError } = await supabase.storage.from("product-images").upload(fileName, file);
+      if (uploadError) {
+        logError("product.imageUploader.upload", uploadError, { fileName });
+        failed.push(file.name);
         newPreviews.push({ localUrl, uploaded: null });
+        continue;
       }
+      const { data: { publicUrl } } = supabase.storage.from("product-images").getPublicUrl(fileName);
+      newPreviews.push({ localUrl, uploaded: { url: publicUrl, alt_text: file.name.replace(/\.[^.]+$/, "") } });
+    }
+
+    if (failed.length > 0) {
+      setError(`No se pudo subir ${failed.length} imagen(es): ${failed.join(", ")}. Intenta de nuevo.`);
     }
 
     setPreviews((prev) => {

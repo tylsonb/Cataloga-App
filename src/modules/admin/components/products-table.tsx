@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { toggleProductStatusAction, deleteProductAdminAction } from "@/modules/admin/actions/admin.actions";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/modules/shared/hooks/use-toast";
 
 export function ProductsTable({ products }: { products: Array<{ id: string; name: string; price: number; status: string }> }) {
   const [pending, startTransition] = useTransition();
@@ -22,7 +23,11 @@ export function ProductsTable({ products }: { products: Array<{ id: string; name
                 variant="outline"
                 disabled={pending}
                 onClick={() => startTransition(async () => {
-                  await toggleProductStatusAction(p.id, p.status === "published" ? "draft" : "published");
+                  const result = await toggleProductStatusAction(p.id, p.status === "published" ? "draft" : "published");
+                  if (!result.success) {
+                    toast({ title: "Error", description: result.error, variant: "destructive" });
+                    return;
+                  }
                   window.location.reload();
                 })}
               >
@@ -32,7 +37,17 @@ export function ProductsTable({ products }: { products: Array<{ id: string; name
                 size="sm"
                 variant="destructive"
                 disabled={pending}
-                onClick={() => { if (confirm("¿Eliminar este producto?")) startTransition(async () => { await deleteProductAdminAction(p.id); window.location.reload(); }); }}
+                onClick={() => {
+                  if (!confirm("¿Eliminar este producto?")) return;
+                  startTransition(async () => {
+                    const result = await deleteProductAdminAction(p.id);
+                    if (!result.success) {
+                      toast({ title: "Error", description: result.error, variant: "destructive" });
+                      return;
+                    }
+                    window.location.reload();
+                  });
+                }}
               >
                 Eliminar
               </Button>

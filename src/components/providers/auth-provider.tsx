@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { logError } from "@/lib/logger";
 import type { User } from "@supabase/supabase-js";
 
 type AuthContextValue = {
@@ -17,10 +18,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user);
-      setLoading(false);
-    });
+    supabase.auth
+      .getUser()
+      .then(({ data, error }) => {
+        if (error && error.name !== "AuthSessionMissingError") {
+          logError("authProvider.getUser", error);
+        }
+        setUser(data.user);
+        setLoading(false);
+      })
+      .catch((error: unknown) => {
+        logError("authProvider.getUser", error);
+        setLoading(false);
+      });
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       setLoading(false);

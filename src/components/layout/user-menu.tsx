@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { logoutAction } from "@/modules/auth/actions/auth.actions";
+import { toast } from "@/modules/shared/hooks/use-toast";
 import { LogOut, LayoutDashboard, Heart, User, Store } from "lucide-react";
 
 type Profile = { full_name: string; avatar_url: string | null } | null;
@@ -24,7 +25,11 @@ export function UserMenu({ profile, role }: { profile: Profile; role: string }) 
   }, []);
 
   async function handleLogout() {
-    await logoutAction();
+    const result = await logoutAction();
+    if (!result.success) {
+      toast({ title: "Error", description: result.error, variant: "destructive" });
+      return;
+    }
     router.push("/");
     router.refresh();
   }

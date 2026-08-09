@@ -1,13 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
+import { dbError } from "@/lib/errors";
 import { ModerationQueue } from "@/modules/admin/components/moderation-queue";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminModeracionPage() {
   const supabase = await createClient();
-  const { data: reports } = await supabase.from("reports")
+  const { data: reports, error } = await supabase.from("reports")
     .select("id, reason, status, created_at, product_id, products(name)")
     .order("created_at", { ascending: false });
+  if (error) throw dbError("admin.moderationPage", error);
   const reportList = (reports ?? []).map((r) => {
     const products = (r as Record<string, unknown>).products as { name: string }[] | { name: string } | null;
     const productName = Array.isArray(products) ? products[0]?.name : products?.name;
