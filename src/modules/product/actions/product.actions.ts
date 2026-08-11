@@ -8,7 +8,7 @@ import type { Result } from "@/modules/shared/types/result.type";
 
 const FORBIDDEN: Result = { success: false, error: "No autorizado" };
 
-export async function createProductAction(input: unknown): Promise<Result> {
+export async function createProductAction(input: unknown): Promise<Result & { productId?: string }> {
   if (!(await getCurrentUser())) return FORBIDDEN;
   const parsed = createProductSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Revisa los datos ingresados" };
@@ -16,7 +16,7 @@ export async function createProductAction(input: unknown): Promise<Result> {
   const slug = slugify(parsed.data.name);
   const { is_featured: _isFeatured, ...safeInput } = parsed.data;
   const product = await createProduct({ ...safeInput, slug } as never);
-  return product ? { success: true } : { success: false, error: "No fue posible crear el producto" };
+  return product ? { success: true, productId: product.id } : { success: false, error: "No fue posible crear el producto" };
 }
 
 export async function updateProductAction(id: string, input: unknown): Promise<Result> {

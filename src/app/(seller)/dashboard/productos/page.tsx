@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { getProductsByBusinessAction } from "@/modules/product/actions/product.actions";
 import { createClient } from "@/lib/supabase/server";
@@ -9,7 +10,8 @@ export const dynamic = "force-dynamic";
 export default async function MisProductosPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const { data: business } = await supabase.from("businesses").select("id").eq("owner_id", user?.id).single();
+  if (!user) redirect("/login");
+  const { data: business } = await supabase.from("businesses").select("id").eq("owner_id", user.id).single();
   const products = business ? await getProductsByBusinessAction(business.id) : [];
   return (
     <div className="container py-10 space-y-6">

@@ -66,6 +66,8 @@ export function ImageUploader({ onUpload, maxImages = 5 }: { onUpload?: (images:
 
   function removePreview(index: number) {
     setPreviews((prev) => {
+      const removed = prev[index];
+      if (removed) URL.revokeObjectURL(removed.localUrl);
       const updated = prev.filter((_, i) => i !== index);
       const validImages = updated.map((p) => p.uploaded).filter((img): img is UploadedImage => img !== null);
       onUpload?.(validImages);

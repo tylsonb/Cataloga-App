@@ -10,7 +10,7 @@ export async function searchProductsAction(input: unknown): Promise<{ items: Sea
   const { q, category_id, city, minPrice, maxPrice, sort, page, pageSize } = parsed.data;
   const supabase = await createClient();
   let query = supabase.from("products").select("id, name, slug, price, currency, status, deleted_at, category_id, business_id, product_images(url)", { count: "exact" }).eq("status", "published").is("deleted_at", null);
-  if (q) query = query.textSearch("name", q);
+  if (q) query = query.or(`name.ilike.%${q}%,description.ilike.%${q}%`);
   if (category_id) query = query.eq("category_id", category_id);
   if (minPrice !== undefined) query = query.gte("price", minPrice);
   if (maxPrice !== undefined) query = query.lte("price", maxPrice);

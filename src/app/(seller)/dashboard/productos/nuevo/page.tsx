@@ -27,14 +27,11 @@ export default async function NuevoProductoPage() {
     });
     if (!result.success) return result;
 
-    if (imagesRaw) {
+    if (imagesRaw && result.productId) {
       const images = JSON.parse(imagesRaw) as { url: string; alt_text: string }[];
       if (images.length > 0) {
         const supabase = await createClient();
-        const { data: product } = await supabase.from("products").select("id").eq("business_id", business.id).order("created_at", { ascending: false }).limit(1).single();
-        if (product) {
-          await supabase.from("product_images").insert(images.map((img, i) => ({ product_id: product.id, url: img.url, alt_text: img.alt_text, sort_order: i })));
-        }
+        await supabase.from("product_images").insert(images.map((img, i) => ({ product_id: result.productId, url: img.url, alt_text: img.alt_text, sort_order: i })));
       }
     }
 

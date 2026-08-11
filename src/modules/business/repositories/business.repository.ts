@@ -3,7 +3,7 @@ import type { Business, BusinessInsert, BusinessUpdate } from "@/modules/busines
 
 export async function getBusinessBySlug(slug: string): Promise<Business | null> {
   const supabase = await createClient();
-  const { data } = await supabase.from("businesses").select("*").eq("slug", slug).single();
+  const { data } = await supabase.from("businesses").select("*").eq("slug", slug).eq("is_active", true).single();
   return data;
 }
 
