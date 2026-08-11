@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Upload, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -18,6 +18,14 @@ export function ImageUploader({ onUpload, maxImages = 5 }: { onUpload?: (images:
   const [previews, setPreviews] = useState<{ localUrl: string; uploaded: UploadedImage | null }[]>([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string>();
+  const previewsRef = useRef(previews);
+  previewsRef.current = previews;
+
+  useEffect(() => {
+    return () => {
+      previewsRef.current.forEach((p) => URL.revokeObjectURL(p.localUrl));
+    };
+  }, []);
 
   async function handleFiles(fileList: FileList | null) {
     if (!fileList) return;

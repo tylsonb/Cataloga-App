@@ -28,10 +28,16 @@ export default async function NuevoProductoPage() {
     if (!result.success) return result;
 
     if (imagesRaw && result.productId) {
-      const images = JSON.parse(imagesRaw) as { url: string; alt_text: string }[];
+      let images: { url: string; alt_text: string }[];
+      try {
+        images = JSON.parse(imagesRaw) as { url: string; alt_text: string }[];
+      } catch {
+        images = [];
+      }
       if (images.length > 0) {
         const supabase = await createClient();
-        await supabase.from("product_images").insert(images.map((img, i) => ({ product_id: result.productId, url: img.url, alt_text: img.alt_text, sort_order: i })));
+        const { error: imagesError } = await supabase.from("product_images").insert(images.map((img, i) => ({ product_id: result.productId, url: img.url, alt_text: img.alt_text, sort_order: i })));
+        if (imagesError) return { success: false as const, error: "El producto se creó, pero no fue posible guardar las imágenes" };
       }
     }
 

@@ -24,7 +24,8 @@ export function UserMenu({ profile, role }: { profile: Profile; role: string }) 
   }, []);
 
   async function handleLogout() {
-    await logoutAction();
+    const result = await logoutAction();
+    if (!result.success) return;
     router.push("/");
     router.refresh();
   }

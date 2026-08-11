@@ -3,7 +3,7 @@ import type { Product, ProductInsert, ProductUpdate, ProductImage } from "@/modu
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   const supabase = await createClient();
-  const { data } = await supabase.from("products").select("*").eq("slug", slug).is("deleted_at", null).single();
+  const { data } = await supabase.from("products").select("*").eq("slug", slug).eq("status", "published").is("deleted_at", null).single();
   return data;
 }
 
@@ -13,7 +13,7 @@ export async function getProducts(opts?: { category_id?: string; business_id?: s
   if (opts?.category_id) query = query.eq("category_id", opts.category_id);
   if (opts?.business_id) query = query.eq("business_id", opts.business_id);
   if (opts?.search) query = query.ilike("name", `%${opts.search}%`);
-  if (opts?.offset) query = query.range(opts.offset, opts.offset + (opts.limit ?? 24) - 1);
+  if (opts?.offset !== undefined) query = query.range(opts.offset, opts.offset + (opts.limit ?? 24) - 1);
   else if (opts?.limit) query = query.limit(opts.limit);
   const { data } = await query.order("created_at", { ascending: false });
   return (data ?? []).map((p) => {

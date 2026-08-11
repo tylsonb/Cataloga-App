@@ -33,10 +33,11 @@ export async function resetPasswordAction(input: unknown): Promise<Result> {
   return error ? { success: false, error: "No fue posible enviar el correo" } : { success: true };
 }
 
-export async function signInWithGoogleAction(): Promise<Result> {
+export async function signInWithGoogleAction(): Promise<Result & { url?: string }> {
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${SITE_URL}/auth/callback` } });
-  return error ? { success: false, error: "No fue posible iniciar sesión con Google" } : { success: true };
+  const { data, error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${SITE_URL}/auth/callback` } });
+  if (error || !data.url) return { success: false, error: "No fue posible iniciar sesión con Google" };
+  return { success: true, url: data.url };
 }
 
 export async function updatePasswordAction(input: unknown): Promise<Result> {
@@ -57,7 +58,8 @@ export async function updateProfileAction(input: unknown): Promise<Result> {
   return error ? { success: false, error: "No fue posible actualizar el perfil" } : { success: true };
 }
 
-export async function logoutAction(): Promise<void> {
+export async function logoutAction(): Promise<Result> {
   const supabase = await createClient();
-  await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut();
+  return error ? { success: false, error: "No fue posible cerrar sesión" } : { success: true };
 }

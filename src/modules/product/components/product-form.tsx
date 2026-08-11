@@ -18,11 +18,18 @@ export function ProductForm({ onSubmit, categories = [], defaultValues }: { onSu
   async function submit(formData: FormData) {
     setPending(true);
     setError(undefined);
-    const imageJson = JSON.stringify(imageUrlsRef.current);
-    formData.append("images", imageJson);
-    const result = await onSubmit(formData);
-    setPending(false);
-    if (result && !result.success) setError(result.error);
+    try {
+      const imageJson = JSON.stringify(imageUrlsRef.current);
+      formData.append("images", imageJson);
+      const result = await onSubmit(formData);
+      if (result && !result.success) setError(result.error);
+    } catch (err) {
+      // redirect() throws a special NEXT_REDIRECT error — let it propagate.
+      if ((err as { digest?: string })?.digest?.startsWith("NEXT_REDIRECT")) throw err;
+      setError("Ocurrió un error inesperado. Intenta nuevamente.");
+    } finally {
+      setPending(false);
+    }
   }
 
   return (

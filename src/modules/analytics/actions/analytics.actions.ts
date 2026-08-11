@@ -5,13 +5,15 @@ import { createClient } from "@/lib/supabase/server";
 export async function trackProductViewAction(productId: string, sessionId?: string): Promise<void> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  await supabase.from("product_views").insert({ product_id: productId, user_id: user?.id ?? null, session_id: sessionId ?? null });
+  const { error } = await supabase.from("product_views").insert({ product_id: productId, user_id: user?.id ?? null, session_id: sessionId ?? null });
+  if (error) console.error("[analytics.trackProductView] insert failed", error);
 }
 
 export async function trackWhatsappClickAction(productId: string, businessId: string, sessionId?: string): Promise<void> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  await supabase.from("whatsapp_clicks").insert({ product_id: productId, business_id: businessId, user_id: user?.id ?? null, session_id: sessionId ?? null });
+  const { error } = await supabase.from("whatsapp_clicks").insert({ product_id: productId, business_id: businessId, user_id: user?.id ?? null, session_id: sessionId ?? null });
+  if (error) console.error("[analytics.trackWhatsappClick] insert failed", error);
 }
 
 export async function trackBusinessViewAction(businessId: string, sessionId?: string): Promise<void> {

@@ -3,12 +3,14 @@ import type { Favorite } from "@/modules/favorites/types/favorites.types";
 
 export async function toggleFavorite(userId: string, productId: string): Promise<boolean> {
   const supabase = await createClient();
-  const { data: existing } = await supabase.from("favorites").select("id").eq("user_id", userId).eq("product_id", productId).single();
+  const { data: existing } = await supabase.from("favorites").select("id").eq("user_id", userId).eq("product_id", productId).maybeSingle();
   if (existing) {
     await supabase.from("favorites").delete().eq("id", existing.id);
     return false;
   }
-  await supabase.from("favorites").insert({ user_id: userId, product_id: productId });
+  const { error } = await supabase.from("favorites").insert({ user_id: userId, product_id: productId });
+  // 23505 = unique_violation: a concurrent request already favorited this product.
+  if (error && error.code !== "23505") throw error;
   return true;
 }
 
@@ -29,6 +31,6 @@ export async function getFavoritesWithProducts(userId: string): Promise<Array<{ 
 
 export async function checkFavoriteStatus(userId: string, productId: string): Promise<boolean> {
   const supabase = await createClient();
-  const { data } = await supabase.from("favorites").select("id").eq("user_id", userId).eq("product_id", productId).single();
+  const { data } = await supabase.from("favorites").select("id").eq("user_id", userId).eq("product_id", productId).maybeSingle();
   return !!data;
 }
