@@ -2,5 +2,22 @@ import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/constants";
 
 export default function robots(): MetadataRoute.Robots {
-  return { rules: { userAgent: "*", allow: "/", disallow: ["/dashboard/", "/admin/", "/login", "/registro"] }, sitemap: `${SITE_URL}/sitemap.xml` };
+  return {
+    rules: {
+      userAgent: "*",
+      allow: "/",
+      disallow: [
+        "/dashboard/",
+        "/admin/",
+        "/login",
+        "/registro",
+        "/actualizar-password",
+        "/recuperar-password",
+        "/perfil",
+        "/favoritos",
+        "/api/",
+      ],
+    },
+    sitemap: `${SITE_URL}/sitemap.xml`,
+  };
 }
