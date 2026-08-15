@@ -8,12 +8,12 @@ import { CURRENCIES } from "@/lib/constants";
 
 type Result = { success: true } | { success: false; error: string };
 
-type DefaultValues = { name?: string; description?: string | null; price?: number; category_id?: string; currency?: string };
+type DefaultValues = { name?: string; description?: string | null; price?: number; category_id?: string; currency?: string; images?: UploadedImage[] };
 
 export function ProductForm({ onSubmit, categories = [], defaultValues }: { onSubmit: (data: FormData) => Promise<Result | void>; categories?: Array<{ id: string; name: string }>; defaultValues?: DefaultValues }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string>();
-  const imageUrlsRef = useRef<UploadedImage[]>([]);
+  const imageUrlsRef = useRef<UploadedImage[]>(defaultValues?.images ?? []);
 
   async function submit(formData: FormData) {
     setPending(true);
@@ -43,7 +43,7 @@ export function ProductForm({ onSubmit, categories = [], defaultValues }: { onSu
           {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
       </label>
-      <ImageUploader onUpload={(images) => { imageUrlsRef.current = images; }} />
+      <ImageUploader initialImages={defaultValues?.images} onUpload={(images) => { imageUrlsRef.current = images; }} />
       {error && <p className="text-sm text-destructive">{error}</p>}
       <Button className="w-full" disabled={pending}>{pending ? "Guardando..." : "Guardar producto"}</Button>
     </form>

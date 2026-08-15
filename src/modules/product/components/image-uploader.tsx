@@ -14,8 +14,10 @@ const ALLOWED_TYPES: Record<string, string> = {
   "image/avif": "avif",
 };
 
-export function ImageUploader({ onUpload, maxImages = 5 }: { onUpload?: (images: UploadedImage[]) => void; maxImages?: number }) {
-  const [previews, setPreviews] = useState<{ localUrl: string; uploaded: UploadedImage | null }[]>([]);
+export function ImageUploader({ onUpload, initialImages = [], maxImages = 5 }: { onUpload?: (images: UploadedImage[]) => void; initialImages?: UploadedImage[]; maxImages?: number }) {
+  const [previews, setPreviews] = useState<{ localUrl: string; uploaded: UploadedImage | null }[]>(() =>
+    initialImages.map((img) => ({ localUrl: img.url, uploaded: img }))
+  );
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string>();
   const previewsRef = useRef(previews);
@@ -23,7 +25,9 @@ export function ImageUploader({ onUpload, maxImages = 5 }: { onUpload?: (images:
 
   useEffect(() => {
     return () => {
-      previewsRef.current.forEach((p) => URL.revokeObjectURL(p.localUrl));
+      previewsRef.current.forEach((p) => {
+        if (p.localUrl.startsWith("blob:")) URL.revokeObjectURL(p.localUrl);
+      });
     };
   }, []);
 

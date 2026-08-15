@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProductBySlugAction, getRelatedProductsAction } from "@/modules/product/actions/product.actions";
 import { ProductGallery } from "@/modules/product/components/product-gallery";
@@ -37,7 +38,7 @@ export default async function ProductoPage({ params }: { params: Promise<{ slug:
 
   const supabase = await createClient();
   const [{ data: business }, { data: images }] = await Promise.all([
-    supabase.from("businesses").select("name, slug, whatsapp, city").eq("id", product.business_id).single(),
+    supabase.from("businesses").select("name, slug, whatsapp, city").eq("id", product.business_id).maybeSingle(),
     supabase.from("product_images").select("url, alt_text").eq("product_id", product.id).order("sort_order"),
   ]);
 
@@ -51,7 +52,7 @@ export default async function ProductoPage({ params }: { params: Promise<{ slug:
         <ProductGallery images={images ?? []} />
         <div className="space-y-6">
           <ProductDetail name={product.name} description={product.description} price={product.price} currency={product.currency} />
-          {business && <p className="text-sm text-muted-foreground">Vendido por <a href={`/negocio/${business.slug}`} className="text-primary hover:underline">{business.name}</a>{business.city && ` — ${business.city}`}</p>}
+          {business && <p className="text-sm text-muted-foreground">Vendido por <Link href={`/negocio/${business.slug}`} className="text-primary hover:underline">{business.name}</Link>{business.city && ` — ${business.city}`}</p>}
           <div className="flex flex-wrap gap-3">
             {business?.whatsapp && <WhatsAppButton phone={business.whatsapp} productName={product.name} productId={product.id} businessId={product.business_id} />}
             <FavoriteButton productId={product.id} />
