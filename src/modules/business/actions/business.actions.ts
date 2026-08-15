@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createBusinessSchema, updateBusinessSchema } from "@/modules/business/schemas/business.schema";
 import { createBusiness, updateBusiness, toggleBusinessStatus, getBusinessBySlug, getBusinessByOwner } from "@/modules/business/repositories/business.repository";
 import { slugify } from "@/modules/shared/utils/slug.util";
@@ -8,6 +9,18 @@ import { isAdmin, ownsBusiness } from "@/lib/auth/guards";
 import type { Result } from "@/modules/shared/types/result.type";
 
 const FORBIDDEN: Result = { success: false, error: "No autorizado" };
+
+function revalidateBusinessPaths(slug?: string) {
+  revalidatePath("/");
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/negocio");
+  revalidatePath("/dashboard/negocio/editar");
+  if (slug) {
+    revalidatePath(`/negocio/${slug}`);
+  }
+  revalidatePath("/negocio/[slug]", "page");
+  revalidatePath("/producto/[slug]", "page");
+}
 
 export async function createBusinessAction(input: unknown): Promise<Result> {
   const supabase = await createClient();
@@ -21,6 +34,7 @@ export async function createBusinessAction(input: unknown): Promise<Result> {
   const business = await createBusiness({ ...parsed.data, slug, owner_id: user.id } as never);
   if (!business) return { success: false, error: "No fue posible crear el negocio" };
 
+  revalidateBusinessPaths(slug);
   return { success: true };
 }
 
@@ -29,12 +43,16 @@ export async function updateBusinessAction(id: string, input: unknown): Promise<
   if (!parsed.success) return { success: false, error: "Revisa los datos ingresados" };
   if (!(await ownsBusiness(id)) && !(await isAdmin())) return FORBIDDEN;
   const business = await updateBusiness(id, parsed.data as never);
-  return business ? { success: true } : { success: false, error: "No fue posible actualizar el negocio" };
+  if (!business) return { success: false, error: "No fue posible actualizar el negocio" };
+
+  revalidateBusinessPaths(business.slug);
+  return { success: true };
 }
 
 export async function toggleBusinessStatusAction(id: string, isActive: boolean): Promise<Result> {
   if (!(await ownsBusiness(id)) && !(await isAdmin())) return FORBIDDEN;
   await toggleBusinessStatus(id, isActive);
+  revalidateBusinessPaths();
   return { success: true };
 }
 

@@ -1,7 +1,8 @@
 import { MessageCircle } from "lucide-react";
+import { formatWhatsappNumber } from "@/modules/shared/utils/whatsapp.util";
 
 export function BusinessInfo({ name, whatsapp, city, address, description, schedule }: { name: string; whatsapp: string; city?: string | null; address?: string | null; description?: string | null; schedule?: unknown }) {
-  const waNumber = whatsapp.replace(/[^0-9]/g, "");
+  const waNumber = formatWhatsappNumber(whatsapp);
   return (
     <div className="space-y-3">
       <h2 className="text-2xl font-bold">{name}</h2>

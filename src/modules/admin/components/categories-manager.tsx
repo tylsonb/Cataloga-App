@@ -1,26 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createCategoryAction } from "@/modules/admin/actions/admin.actions";
 
 export function CategoriesManager({ categories }: { categories: Array<{ id: string; name: string; slug: string }> }) {
   const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string>();
+  const formRef = useRef<HTMLFormElement>(null);
+  const router = useRouter();
 
   async function submit(formData: FormData) {
     setPending(true);
-    await createCategoryAction({ name: formData.get("name"), slug: formData.get("slug") });
-    setPending(false);
+    setError(undefined);
+    try {
+      const result = await createCategoryAction({ name: formData.get("name"), slug: formData.get("slug") });
+      if (!result.success) {
+        setError(result.error);
+      } else {
+        formRef.current?.reset();
+        router.refresh();
+      }
+    } catch {
+      setError("Ocurrió un error inesperado al crear la categoría");
+    } finally {
+      setPending(false);
+    }
   }
 
   return (
     <div className="space-y-6">
-      <form action={submit} className="flex gap-2">
+      <form ref={formRef} action={submit} className="flex gap-2">
         <Input name="name" placeholder="Nombre" required />
         <Input name="slug" placeholder="slug" required />
-        <Button disabled={pending}>Agregar</Button>
+        <Button disabled={pending}>{pending ? "Agregando..." : "Agregar"}</Button>
       </form>
+      {error && <p className="text-sm text-destructive">{error}</p>}
       <table className="w-full text-sm">
         <thead><tr className="border-b text-left"><th className="py-2">Nombre</th><th className="py-2">Slug</th></tr></thead>
         <tbody>

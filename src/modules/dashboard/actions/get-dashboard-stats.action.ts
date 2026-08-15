@@ -8,9 +8,9 @@ export async function getDashboardStatsAction(): Promise<DashboardStats | null> 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data: business, error: businessError } = await supabase.from("businesses").select("id").eq("owner_id", user.id).single();
+  const { data: business, error: businessError } = await supabase.from("businesses").select("id").eq("owner_id", user.id).maybeSingle();
   if (businessError || !business) {
-    if (businessError && businessError.code !== "PGRST116") console.error("[dashboard.getStats] business lookup failed", businessError);
+    if (businessError) console.error("[dashboard.getStats] business lookup failed", businessError);
     return null;
   }
 

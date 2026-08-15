@@ -23,7 +23,7 @@ export async function searchProductsAction(input: unknown): Promise<{ items: Sea
     case "price_asc": query = query.order("price", { ascending: true }); break;
     case "price_desc": query = query.order("price", { ascending: false }); break;
     case "newest": query = query.order("created_at", { ascending: false }); break;
-    default: break;
+    default: query = query.order("created_at", { ascending: false }); break;
   }
   const offset = (page - 1) * pageSize;
   query = query.range(offset, offset + pageSize - 1);

@@ -48,16 +48,6 @@ export async function updatePasswordAction(input: unknown): Promise<Result> {
   return error ? { success: false, error: "No fue posible actualizar la contraseña" } : { success: true };
 }
 
-export async function updateProfileAction(input: unknown): Promise<Result> {
-  const parsed = z.object({ fullName: z.string().min(2, "Ingresa tu nombre completo"), phone: z.string().optional(), avatarUrl: z.string().url().optional().or(z.literal("")) }).safeParse(input);
-  if (!parsed.success) return { success: false, error: "Revisa los datos ingresados" };
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { success: false, error: "No hay sesión activa" };
-  const { error } = await supabase.from("profiles").update({ full_name: parsed.data.fullName, phone: parsed.data.phone ?? null, avatar_url: parsed.data.avatarUrl || null }).eq("id", user.id);
-  return error ? { success: false, error: "No fue posible actualizar el perfil" } : { success: true };
-}
-
 export async function logoutAction(): Promise<Result> {
   const supabase = await createClient();
   const { error } = await supabase.auth.signOut();

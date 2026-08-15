@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import type { Result } from "@/modules/shared/types/result.type";
@@ -26,5 +27,7 @@ export async function updateProfileAction(userId: string, input: unknown): Promi
     updated_at: new Date().toISOString(),
   }).eq("id", user.id);
   if (error) return { success: false, error: "No fue posible actualizar el perfil" };
+  revalidatePath("/perfil");
+  revalidatePath("/", "layout");
   return { success: true };
 }

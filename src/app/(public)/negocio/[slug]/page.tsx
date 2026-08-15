@@ -20,7 +20,7 @@ export default async function NegocioPage({ params }: { params: Promise<{ slug: 
   const { slug } = await params;
   const business = await getBusinessBySlugAction(slug);
   if (!business) notFound();
-  const products = await getProductsByBusinessAction(business.id);
+  const products = await getProductsByBusinessAction(business.id, "published");
   const businessJsonLd = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",

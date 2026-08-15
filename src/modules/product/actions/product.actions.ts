@@ -65,8 +65,8 @@ export async function getProductsAction(opts?: Parameters<typeof getProducts>[0]
   return getProducts(opts);
 }
 
-export async function getProductsByBusinessAction(businessId: string) {
-  return getProductsByBusiness(businessId);
+export async function getProductsByBusinessAction(businessId: string, status?: string) {
+  return getProductsByBusiness(businessId, status);
 }
 
 export async function getRelatedProductsAction(productId: string, categoryId: string, limit?: number) {

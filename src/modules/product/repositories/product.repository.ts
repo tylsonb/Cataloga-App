@@ -22,9 +22,11 @@ export async function getProducts(opts?: { category_id?: string; business_id?: s
   });
 }
 
-export async function getProductsByBusiness(businessId: string): Promise<Product[]> {
+export async function getProductsByBusiness(businessId: string, status?: string): Promise<Product[]> {
   const supabase = await createClient();
-  const { data } = await supabase.from("products").select("*, product_images(url)").eq("business_id", businessId).is("deleted_at", null).order("created_at", { ascending: false });
+  let query = supabase.from("products").select("*, product_images(url)").eq("business_id", businessId).is("deleted_at", null);
+  if (status) query = query.eq("status", status);
+  const { data } = await query.order("created_at", { ascending: false });
   return (data ?? []).map((p) => {
     const images = (p as Record<string, unknown>).product_images as { url: string }[] | undefined;
     return { ...p, image_url: images?.[0]?.url } as Product;

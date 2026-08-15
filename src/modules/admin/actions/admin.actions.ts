@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth/guards";
 import { createCategorySchema, updateCategorySchema } from "@/modules/admin/schemas/category.schema";
@@ -37,6 +38,7 @@ export async function toggleUserStatusAction(userId: string, active: boolean): P
   const supabase = await createClient();
   const { error } = await supabase.from("profiles").update({ is_active: active, updated_at: new Date().toISOString() }).eq("id", userId);
   if (error) return { success: false, error: "No fue posible actualizar el usuario" };
+  revalidatePath("/admin/usuarios");
   return { success: true };
 }
 
@@ -45,6 +47,9 @@ export async function toggleBusinessStatusAdminAction(businessId: string, active
   const supabase = await createClient();
   const { error } = await supabase.from("businesses").update({ is_active: active }).eq("id", businessId);
   if (error) return { success: false, error: "No fue posible actualizar el negocio" };
+  revalidatePath("/admin/negocios");
+  revalidatePath("/");
+  revalidatePath("/negocio/[slug]", "page");
   return { success: true };
 }
 
@@ -53,6 +58,11 @@ export async function toggleProductStatusAction(productId: string, status: "publ
   const supabase = await createClient();
   const { error } = await supabase.from("products").update({ status }).eq("id", productId);
   if (error) return { success: false, error: "No fue posible actualizar el producto" };
+  revalidatePath("/admin/productos");
+  revalidatePath("/");
+  revalidatePath("/categoria/[slug]", "page");
+  revalidatePath("/producto/[slug]", "page");
+  revalidatePath("/dashboard/productos");
   return { success: true };
 }
 
@@ -61,6 +71,11 @@ export async function deleteProductAdminAction(productId: string): Promise<Resul
   const supabase = await createClient();
   const { error } = await supabase.from("products").update({ deleted_at: new Date().toISOString() }).eq("id", productId);
   if (error) return { success: false, error: "No fue posible eliminar el producto" };
+  revalidatePath("/admin/productos");
+  revalidatePath("/");
+  revalidatePath("/categoria/[slug]", "page");
+  revalidatePath("/producto/[slug]", "page");
+  revalidatePath("/dashboard/productos");
   return { success: true };
 }
 
@@ -69,6 +84,8 @@ export async function deleteBusinessAdminAction(businessId: string): Promise<Res
   const supabase = await createClient();
   const { error } = await supabase.from("businesses").update({ is_active: false }).eq("id", businessId);
   if (error) return { success: false, error: "No fue posible desactivar el negocio" };
+  revalidatePath("/admin/negocios");
+  revalidatePath("/");
   return { success: true };
 }
 
@@ -78,7 +95,11 @@ export async function createCategoryAction(input: unknown): Promise<Result> {
   if (!parsed.success) return { success: false, error: "Revisa los datos ingresados" };
   const supabase = await createClient();
   const { error } = await supabase.from("categories").insert(parsed.data as never);
-  return error ? { success: false, error: "No fue posible crear la categoría" } : { success: true };
+  if (error) return { success: false, error: "No fue posible crear la categoría" };
+  revalidatePath("/admin/categorias");
+  revalidatePath("/");
+  revalidatePath("/categoria/[slug]", "page");
+  return { success: true };
 }
 
 export async function updateCategoryAction(id: string, input: unknown): Promise<Result> {
@@ -87,14 +108,22 @@ export async function updateCategoryAction(id: string, input: unknown): Promise<
   if (!parsed.success) return { success: false, error: "Revisa los datos ingresados" };
   const supabase = await createClient();
   const { error } = await supabase.from("categories").update(parsed.data as never).eq("id", id);
-  return error ? { success: false, error: "No fue posible actualizar la categoría" } : { success: true };
+  if (error) return { success: false, error: "No fue posible actualizar la categoría" };
+  revalidatePath("/admin/categorias");
+  revalidatePath("/");
+  revalidatePath("/categoria/[slug]", "page");
+  return { success: true };
 }
 
 export async function deleteCategoryAction(id: string): Promise<Result> {
   if (!(await requireAdmin())) return FORBIDDEN;
   const supabase = await createClient();
   const { error } = await supabase.from("categories").delete().eq("id", id);
-  return error ? { success: false, error: "No fue posible eliminar la categoría" } : { success: true };
+  if (error) return { success: false, error: "No fue posible eliminar la categoría" };
+  revalidatePath("/admin/categorias");
+  revalidatePath("/");
+  revalidatePath("/categoria/[slug]", "page");
+  return { success: true };
 }
 
 export async function exportDataAction(table: string): Promise<Result & { data?: unknown }> {

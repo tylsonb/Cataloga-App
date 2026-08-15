@@ -23,7 +23,7 @@ export async function isAdmin(): Promise<boolean> {
     .from("user_roles")
     .select("role")
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
   return data?.role === "admin";
 }
 
@@ -37,7 +37,7 @@ export async function requireAdmin(): Promise<User | null> {
     .from("user_roles")
     .select("role")
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
   return data?.role === "admin" ? user : null;
 }
 
@@ -52,7 +52,7 @@ export async function ownsBusiness(businessId: string): Promise<boolean> {
     .select("id")
     .eq("id", businessId)
     .eq("owner_id", user.id)
-    .single();
+    .maybeSingle();
   return !!data;
 }
 
@@ -66,7 +66,7 @@ export async function ownsProduct(productId: string): Promise<boolean> {
     .from("products")
     .select("business_id, businesses!inner(owner_id)")
     .eq("id", productId)
-    .single();
+    .maybeSingle();
   if (!data) return false;
   const business = data.businesses as unknown as { owner_id: string } | { owner_id: string }[] | null;
   const owner = Array.isArray(business) ? business[0]?.owner_id : business?.owner_id;
