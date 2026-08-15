@@ -16,13 +16,15 @@ export default async function EditarNegocioPage() {
   async function submit(formData: FormData) {
     "use server";
     if (!business) return { success: false as const, error: "No se encontró el negocio" };
-    return updateBusinessAction(business.id, {
+    const result = await updateBusinessAction(business.id, {
       name: formData.get("name"),
       whatsapp: formData.get("whatsapp"),
       description: formData.get("description") || undefined,
       city: formData.get("city") || undefined,
       category_id: formData.get("category_id") || undefined,
     });
+    if (result.success) redirect("/dashboard/negocio");
+    return result;
   }
 
   const { data: categories } = await supabase.from("categories").select("id, name").eq("is_active", true).order("sort_order");
