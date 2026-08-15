@@ -3,17 +3,17 @@ import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "edge";
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const slug = searchParams.get("slug") ?? "";
+export async function GET(request: Request, { params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
 
   const supabase = await createClient();
   const { data: product } = await supabase
     .from("products")
     .select("name, price, currency, business_id")
     .eq("slug", slug)
+    .eq("status", "published")
     .is("deleted_at", null)
-    .single();
+    .maybeSingle();
 
   let businessName = "";
   if (product?.business_id) {

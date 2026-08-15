@@ -1,11 +1,13 @@
 "use client";
 
 import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { toggleUserStatusAction } from "@/modules/admin/actions/admin.actions";
 import { Button } from "@/components/ui/button";
 
 export function UsersTable({ users }: { users: Array<{ id: string; email: string; full_name: string; role: string; created_at: string; is_active?: boolean }> }) {
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
 
   return (
     <table className="w-full text-sm">
@@ -24,7 +26,7 @@ export function UsersTable({ users }: { users: Array<{ id: string; email: string
                 disabled={pending}
                 onClick={() => startTransition(async () => {
                   await toggleUserStatusAction(u.id, u.is_active === false);
-                  window.location.reload();
+                  router.refresh();
                 })}
               >
                 {u.is_active === false ? "Activar" : "Desactivar"}

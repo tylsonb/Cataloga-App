@@ -1,11 +1,13 @@
 "use client";
 
 import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { toggleBusinessStatusAdminAction } from "@/modules/admin/actions/admin.actions";
 import { Button } from "@/components/ui/button";
 
 export function BusinessesTable({ businesses }: { businesses: Array<{ id: string; name: string; is_active: boolean; city?: string | null }> }) {
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
 
   return (
     <table className="w-full text-sm">
@@ -23,7 +25,7 @@ export function BusinessesTable({ businesses }: { businesses: Array<{ id: string
                 disabled={pending}
                 onClick={() => startTransition(async () => {
                   await toggleBusinessStatusAdminAction(b.id, !b.is_active);
-                  window.location.reload();
+                  router.refresh();
                 })}
               >
                 {b.is_active ? "Pausar" : "Activar"}

@@ -1,11 +1,13 @@
 "use client";
 
 import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { toggleProductStatusAction, deleteProductAdminAction } from "@/modules/admin/actions/admin.actions";
 import { Button } from "@/components/ui/button";
 
 export function ProductsTable({ products }: { products: Array<{ id: string; name: string; price: number; status: string }> }) {
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
 
   return (
     <table className="w-full text-sm">
@@ -23,7 +25,7 @@ export function ProductsTable({ products }: { products: Array<{ id: string; name
                 disabled={pending}
                 onClick={() => startTransition(async () => {
                   await toggleProductStatusAction(p.id, p.status === "published" ? "draft" : "published");
-                  window.location.reload();
+                  router.refresh();
                 })}
               >
                 {p.status === "published" ? "Pausar" : "Publicar"}
@@ -32,7 +34,7 @@ export function ProductsTable({ products }: { products: Array<{ id: string; name
                 size="sm"
                 variant="destructive"
                 disabled={pending}
-                onClick={() => { if (confirm("¿Eliminar este producto?")) startTransition(async () => { await deleteProductAdminAction(p.id); window.location.reload(); }); }}
+                onClick={() => { if (confirm("¿Eliminar este producto?")) startTransition(async () => { await deleteProductAdminAction(p.id); router.refresh(); }); }}
               >
                 Eliminar
               </Button>

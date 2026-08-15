@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { toggleFavorite, getFavoritesWithProducts, checkFavoriteStatus } from "@/modules/favorites/repositories/favorites.repository";
 import type { Result } from "@/modules/shared/types/result.type";
@@ -10,6 +11,8 @@ export async function toggleFavoriteAction(productId: string): Promise<Result & 
   if (!user) return { success: false, error: "No hay sesión activa" };
   try {
     const favorited = await toggleFavorite(user.id, productId);
+    revalidatePath("/favoritos");
+    revalidatePath("/dashboard");
     return { success: true, favorited };
   } catch {
     return { success: false, error: "No fue posible actualizar tus favoritos" };
