@@ -13,6 +13,7 @@ import { ProductViewTracker } from "@/modules/analytics/components/product-view-
 import { createClient } from "@/lib/supabase/server";
 import { SITE_URL } from "@/lib/constants";
 import { serializeJsonLd } from "@/lib/json-ld";
+import { formatPrice } from "@/modules/shared/utils/format.util";
 
 export const dynamic = "force-dynamic";
 
@@ -20,12 +21,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const product = await getProductBySlugAction(slug);
   if (!product) return { title: "Producto no encontrado" };
+  const formattedPrice = formatPrice(product.price, product.currency, false);
   return {
     title: product.name,
-    description: product.description ?? `${product.name} — $${product.price.toLocaleString("es-CL")}`,
+    description: product.description ?? `${product.name} — ${formattedPrice}`,
     openGraph: {
       title: product.name,
-      description: product.description ?? `${product.name} — $${product.price.toLocaleString("es-CL")}`,
+      description: product.description ?? `${product.name} — ${formattedPrice}`,
       images: [`${SITE_URL}/api/og/${slug}`],
     },
   };

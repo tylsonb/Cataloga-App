@@ -4,8 +4,9 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toggleProductStatusAction, deleteProductAdminAction } from "@/modules/admin/actions/admin.actions";
 import { Button } from "@/components/ui/button";
+import { formatPrice } from "@/modules/shared/utils/format.util";
 
-export function ProductsTable({ products }: { products: Array<{ id: string; name: string; price: number; status: string }> }) {
+export function ProductsTable({ products }: { products: Array<{ id: string; name: string; price: number; currency?: string; status: string }> }) {
   const [pending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -16,7 +17,7 @@ export function ProductsTable({ products }: { products: Array<{ id: string; name
         {products.map((p) => (
           <tr key={p.id} className="border-b">
             <td className="py-2">{p.name}</td>
-            <td className="py-2">${p.price.toLocaleString("es-CL")}</td>
+            <td className="py-2">{formatPrice(p.price, p.currency ?? "CLP")}</td>
             <td className="py-2">{p.status === "published" ? "Publicado" : "Borrador"}</td>
             <td className="py-2 flex gap-2">
               <Button

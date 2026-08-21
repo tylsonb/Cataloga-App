@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { formatPrice } from "@/modules/shared/utils/format.util";
 
 export function ProductCard({ name, slug, price, currency, imageUrl }: { name: string; slug: string; price: number; currency: string; imageUrl?: string }) {
   return (
@@ -8,7 +9,7 @@ export function ProductCard({ name, slug, price, currency, imageUrl }: { name: s
       </div>
       <div className="p-3">
         <h3 className="font-medium line-clamp-1">{name}</h3>
-        <p className="text-sm font-bold">${price.toLocaleString("es-CL")} {currency}</p>
+        <p className="text-sm font-bold">{formatPrice(price, currency)}</p>
       </div>
     </Link>
   );
