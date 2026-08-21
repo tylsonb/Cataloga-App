@@ -16,14 +16,10 @@ import { InstallGuide } from "@/components/pwa/install-guide";
 export const metadata: Metadata = {
   title: "Instala la App | Catáloga",
   description:
-    "Instala Catáloga gratis en tu Android, iPhone o computadora. Descubre y vende productos por WhatsApp con tu catálogo inteligente.",
+    "Instala Catáloga en tu Android, iPhone o computadora. Descubre y vende productos por WhatsApp con tu catálogo inteligente.",
 };
 
 const faqs = [
-  {
-    q: "¿Cuánto cuesta instalar y usar Catáloga?",
-    a: "Es totalmente gratis. No hay costos de instalación, membresías ni comisiones por venta. El contacto entre comprador y vendedor es directo por WhatsApp.",
-  },
   {
     q: "¿Necesito descargarla de Google Play o App Store?",
     a: "No. Catáloga es una aplicación web progresiva (PWA): se instala directamente desde el navegador en menos de 30 segundos y ocupa menos de 2 MB.",
@@ -34,7 +30,7 @@ const faqs = [
   },
   {
     q: "¿Cómo vendo mis productos?",
-    a: "Crea tu cuenta gratis, registra tu negocio y sube tus productos con fotos y precios. Obtendrás un catálogo con enlace propio para compartir con tus clientes.",
+    a: "Crea tu cuenta, registra tu negocio y sube tus productos con fotos y precios. Obtendrás un catálogo con enlace propio para compartir con tus clientes.",
   },
   {
     q: "¿Cómo se actualiza la app?",
@@ -50,7 +46,7 @@ export default function AppLandingPage() {
         <div className="container flex flex-col items-center py-16 text-center md:py-24">
           <span className="flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium">
             <Smartphone size={16} className="text-primary" />
-            Aplicación gratuita para Android, iPhone y PC
+            Aplicación disponible para Android, iPhone y PC
           </span>
           <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-bold tracking-tight md:text-5xl">
             Lleva Catáloga en tu bolsillo: compra y vende por WhatsApp
@@ -138,7 +134,7 @@ export default function AppLandingPage() {
               href="/registro"
               className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
             >
-              Crear mi catálogo gratis
+              Crear mi catálogo
               <ArrowRight size={16} />
             </Link>
           </div>
@@ -179,7 +175,7 @@ export default function AppLandingPage() {
           <Store size={36} className="text-primary" />
           <h2 className="text-3xl font-bold">Empieza a usar Catáloga hoy</h2>
           <p className="max-w-xl text-muted-foreground">
-            Instálala gratis en tu teléfono y descubre una nueva forma de comprar y vender por WhatsApp.
+            Instálala en tu teléfono y descubre una nueva forma de comprar y vender por WhatsApp.
           </p>
           <div className="flex flex-col gap-3 sm:flex-row">
             <a
@@ -193,7 +189,7 @@ export default function AppLandingPage() {
               href="/registro"
               className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border px-6 text-sm font-medium transition-colors hover:bg-accent"
             >
-              Crear mi cuenta gratis
+              Crear mi cuenta
             </Link>
           </div>
         </div>
