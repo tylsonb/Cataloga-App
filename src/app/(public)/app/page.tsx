@@ -30,7 +30,7 @@ const faqs = [
   },
   {
     q: "¿Cómo vendo mis productos?",
-    a: "Crea tu cuenta, registra tu negocio y sube tus productos con fotos y precios. Obtendrás un catálogo con enlace propio para compartir con tus clientes.",
+    a: "Crea tu cuenta, registra tu negocio y sube tus productos con fotos y precios para que los compradores puedan encontrarte.",
   },
   {
     q: "¿Cómo se actualiza la app?",
