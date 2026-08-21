@@ -36,7 +36,7 @@ export function ProductForm({ onSubmit, categories = [], defaultValues }: { onSu
     <form action={submit} className="space-y-4">
       <label className="block text-sm font-medium">Nombre del producto<Input className="mt-1" name="name" defaultValue={defaultValues?.name} required /></label>
       <label className="block text-sm font-medium">Descripción<Input className="mt-1" name="description" defaultValue={defaultValues?.description ?? ""} /></label>
-      <label className="block text-sm font-medium">Precio<div className="mt-1 flex gap-2"><Input name="price" type="number" min={0} defaultValue={defaultValues?.price} required className="flex-1" /><select name="currency" defaultValue={defaultValues?.currency ?? "CLP"} className="rounded-lg border bg-background p-2">{CURRENCIES.map((c) => <option key={c.code} value={c.code}>{c.code}</option>)}</select></div></label>
+      <label className="block text-sm font-medium">Precio<div className="mt-1 flex gap-2"><Input name="price" type="number" min={0} defaultValue={defaultValues?.price} required className="flex-1" /><select name="currency" defaultValue={defaultValues?.currency ?? "CLP"} className="rounded-lg border bg-background p-2">{CURRENCIES.map((c) => <option key={c.code} value={c.code}>{c.flag} {c.code}</option>)}</select></div></label>
       <label className="block text-sm font-medium">Categoría
         <select name="category_id" required defaultValue={defaultValues?.category_id ?? ""} className="mt-1 w-full rounded-lg border bg-background p-2">
           <option value="">Seleccionar categoría</option>
