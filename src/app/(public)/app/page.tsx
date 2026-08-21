@@ -125,10 +125,6 @@ export default function AppLandingPage() {
                 <BarChart3 size={16} className="mt-0.5 shrink-0 text-primary" />
                 Mide las visitas y clics de tus productos con estadísticas en tiempo real.
               </li>
-              <li className="flex items-start gap-2">
-                <Store size={16} className="mt-0.5 shrink-0 text-primary" />
-                Comparte el enlace de tu negocio en redes sociales y estados de WhatsApp.
-              </li>
             </ul>
             <Link
               href="/registro"
