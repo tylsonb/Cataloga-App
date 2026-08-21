@@ -10,7 +10,6 @@ import {
   PlusSquare,
   MoreVertical,
   CheckCircle2,
-  Sparkles,
   Zap,
   HardDrive,
   Wifi,
@@ -68,7 +67,7 @@ export function InstallGuide() {
     <div className="mx-auto w-full max-w-4xl">
       {deferredPrompt && !isInstalled && (
         <div className="mb-8 rounded-2xl border-2 border-primary/40 bg-primary/5 p-6 text-center shadow-lg">
-          <Sparkles className="mx-auto mb-2 text-primary" size={32} />
+          <Smartphone className="mx-auto mb-2 text-primary" size={32} />
           <h3 className="text-xl font-bold">¡Tu dispositivo es compatible con instalación directa!</h3>
           <p className="mt-1 text-sm text-muted-foreground">
             Presiona el botón para agregar Catáloga a tu pantalla de inicio con 1 solo toque.

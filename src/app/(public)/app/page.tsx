@@ -119,7 +119,7 @@ export default function AppLandingPage() {
               </li>
               <li className="flex items-start gap-2">
                 <MessageCircle size={16} className="mt-0.5 shrink-0 text-primary" />
-                Recibe pedidos directo en tu WhatsApp, sin intermediarios ni comisiones.
+                Recibe pedidos y consultas directo en tu WhatsApp, sin intermediarios.
               </li>
               <li className="flex items-start gap-2">
                 <BarChart3 size={16} className="mt-0.5 shrink-0 text-primary" />
