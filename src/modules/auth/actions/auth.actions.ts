@@ -16,13 +16,29 @@ export async function loginAction(input: unknown): Promise<Result> {
   return error ? { success: false, error: "Credenciales inválidas" } : { success: true };
 }
 
-export async function registerAction(input: unknown): Promise<Result> {
+export async function registerAction(input: unknown): Promise<Result & { autoLoggedIn?: boolean }> {
   const parsed = registerSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Revisa los datos ingresados" };
   const supabase = await createClient();
   const origin = (await headers()).get("origin") ?? SITE_URL;
-  const { error } = await supabase.auth.signUp({ email: parsed.data.email, password: parsed.data.password, options: { data: { full_name: parsed.data.fullName }, emailRedirectTo: `${origin}/login` } });
-  return error ? { success: false, error: error.message } : { success: true };
+  const { data, error } = await supabase.auth.signUp({
+    email: parsed.data.email,
+    password: parsed.data.password,
+    options: { data: { full_name: parsed.data.fullName }, emailRedirectTo: `${origin}/login` },
+  });
+  if (error) return { success: false, error: error.message };
+
+  if (data.session) {
+    return { success: true, autoLoggedIn: true };
+  }
+
+  // Attempt automatic sign-in if email confirm is disabled
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email: parsed.data.email,
+    password: parsed.data.password,
+  });
+
+  return { success: true, autoLoggedIn: !signInError };
 }
 
 export async function resetPasswordAction(input: unknown): Promise<Result> {
