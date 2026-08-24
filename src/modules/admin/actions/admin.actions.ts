@@ -34,49 +34,76 @@ export async function getAdminStatsAction(): Promise<AdminStats | null> {
 }
 
 export async function toggleUserStatusAction(userId: string, active: boolean): Promise<Result> {
-  if (!(await requireAdmin())) return FORBIDDEN;
-  const supabase = await createClient();
-  const { error } = await supabase.from("profiles").update({ is_active: active, updated_at: new Date().toISOString() }).eq("id", userId);
-  if (error) return { success: false, error: "No fue posible actualizar el usuario" };
-  revalidatePath("/admin/usuarios");
-  return { success: true };
+  try {
+    if (!(await requireAdmin())) return FORBIDDEN;
+    const supabase = await createClient();
+    const { error } = await supabase.from("profiles").update({ is_active: active, updated_at: new Date().toISOString() }).eq("id", userId);
+    if (error) return { success: false, error: "No fue posible actualizar el usuario" };
+    revalidatePath("/admin/usuarios");
+    return { success: true };
+  } catch {
+    return { success: false, error: "Error en el servidor al actualizar el usuario" };
+  }
+}
+
+export async function deleteUserAdminAction(userId: string): Promise<Result> {
+  try {
+    if (!(await requireAdmin())) return FORBIDDEN;
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("delete_user_by_admin", { target_user_id: userId });
+    if (error) return { success: false, error: error.message || "No fue posible eliminar el usuario" };
+    revalidatePath("/admin/usuarios");
+    revalidatePath("/admin/negocios");
+    revalidatePath("/admin/productos");
+    revalidatePath("/");
+    return { success: true };
+  } catch {
+    return { success: false, error: "Error en el servidor al eliminar el usuario" };
+  }
 }
 
 export async function toggleBusinessStatusAdminAction(businessId: string, active: boolean): Promise<Result> {
-  if (!(await requireAdmin())) return FORBIDDEN;
-  const supabase = await createClient();
-  const { error } = await supabase.from("businesses").update({ is_active: active }).eq("id", businessId);
-  if (error) return { success: false, error: "No fue posible actualizar el negocio" };
-  revalidatePath("/admin/negocios");
-  revalidatePath("/");
-  revalidatePath("/negocio/[slug]", "page");
-  return { success: true };
+  try {
+    if (!(await requireAdmin())) return FORBIDDEN;
+    const supabase = await createClient();
+    const { error } = await supabase.from("businesses").update({ is_active: active }).eq("id", businessId);
+    if (error) return { success: false, error: "No fue posible actualizar el negocio" };
+    revalidatePath("/admin/negocios");
+    revalidatePath("/");
+    return { success: true };
+  } catch {
+    return { success: false, error: "Error en el servidor al actualizar el negocio" };
+  }
 }
 
 export async function toggleProductStatusAction(productId: string, status: "published" | "draft"): Promise<Result> {
-  if (!(await requireAdmin())) return FORBIDDEN;
-  const supabase = await createClient();
-  const { error } = await supabase.from("products").update({ status }).eq("id", productId);
-  if (error) return { success: false, error: "No fue posible actualizar el producto" };
-  revalidatePath("/admin/productos");
-  revalidatePath("/");
-  revalidatePath("/categoria/[slug]", "page");
-  revalidatePath("/producto/[slug]", "page");
-  revalidatePath("/dashboard/productos");
-  return { success: true };
+  try {
+    if (!(await requireAdmin())) return FORBIDDEN;
+    const supabase = await createClient();
+    const { error } = await supabase.from("products").update({ status }).eq("id", productId);
+    if (error) return { success: false, error: "No fue posible actualizar el producto" };
+    revalidatePath("/admin/productos");
+    revalidatePath("/");
+    revalidatePath("/dashboard/productos");
+    return { success: true };
+  } catch {
+    return { success: false, error: "Error en el servidor al actualizar el producto" };
+  }
 }
 
 export async function deleteProductAdminAction(productId: string): Promise<Result> {
-  if (!(await requireAdmin())) return FORBIDDEN;
-  const supabase = await createClient();
-  const { error } = await supabase.from("products").update({ deleted_at: new Date().toISOString() }).eq("id", productId);
-  if (error) return { success: false, error: "No fue posible eliminar el producto" };
-  revalidatePath("/admin/productos");
-  revalidatePath("/");
-  revalidatePath("/categoria/[slug]", "page");
-  revalidatePath("/producto/[slug]", "page");
-  revalidatePath("/dashboard/productos");
-  return { success: true };
+  try {
+    if (!(await requireAdmin())) return FORBIDDEN;
+    const supabase = await createClient();
+    const { error } = await supabase.from("products").update({ deleted_at: new Date().toISOString() }).eq("id", productId);
+    if (error) return { success: false, error: "No fue posible eliminar el producto" };
+    revalidatePath("/admin/productos");
+    revalidatePath("/");
+    revalidatePath("/dashboard/productos");
+    return { success: true };
+  } catch {
+    return { success: false, error: "Error en el servidor al eliminar el producto" };
+  }
 }
 
 export async function deleteBusinessAdminAction(businessId: string): Promise<Result> {
