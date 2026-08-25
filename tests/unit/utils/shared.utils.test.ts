@@ -16,11 +16,14 @@ describe("slugify", () => {
 });
 
 describe("formatPrice", () => {
-  it("formats CLP", () => {
-    expect(formatPrice(1500, "CLP")).toBe("$1.500");
+  it("formats CLP with flag and code", () => {
+    expect(formatPrice(1500, "CLP")).toBe("🇨🇱 $1.500 CLP");
   });
-  it("formats USD", () => {
-    expect(formatPrice(99, "USD")).toBe("US$99");
+  it("formats USD with flag and code", () => {
+    expect(formatPrice(99, "USD")).toBe("🇺🇸 US$99 USD");
+  });
+  it("formats without flag when includeFlag is false", () => {
+    expect(formatPrice(1500, "CLP", false)).toBe("$1.500 CLP");
   });
 });
 

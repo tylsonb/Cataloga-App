@@ -106,26 +106,26 @@ describe("product integration — slugify edge cases", () => {
 
 describe("product integration — formatPrice edge cases", () => {
   it("formats zero CLP", () => {
-    expect(formatPrice(0, "CLP")).toBe("$0");
+    expect(formatPrice(0, "CLP")).toBe("🇨🇱 $0 CLP");
   });
 
   it("formats large number", () => {
-    expect(formatPrice(1000000, "CLP")).toBe("$1.000.000");
+    expect(formatPrice(1000000, "CLP")).toBe("🇨🇱 $1.000.000 CLP");
   });
 
   it("formats EUR with euro symbol", () => {
-    expect(formatPrice(50, "EUR")).toBe("€50");
+    expect(formatPrice(50, "EUR")).toBe("🇪🇺 €50 EUR");
   });
 
   it("formats PEN with sol symbol", () => {
-    expect(formatPrice(100, "PEN")).toBe("S/100");
+    expect(formatPrice(100, "PEN")).toBe("🇵🇪 S/100 PEN");
   });
 
   it("defaults to CLP when no currency provided", () => {
-    expect(formatPrice(5000)).toBe("$5.000");
+    expect(formatPrice(5000)).toBe("🇨🇱 $5.000 CLP");
   });
 
-  it("falls back to $ for unknown currency", () => {
-    expect(formatPrice(100, "GBP")).toBe("$100");
+  it("falls back to $ for unknown currency without flag", () => {
+    expect(formatPrice(100, "GBP")).toBe("$100 GBP");
   });
 });

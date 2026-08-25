@@ -8,6 +8,7 @@ import { ProductRelated } from "@/modules/product/components/product-related";
 import { WhatsAppButton } from "@/modules/shared/components/whatsapp-button";
 import { FavoriteButton } from "@/modules/favorites/components/favorite-button";
 import { ShareButton } from "@/modules/shared/components/share-button";
+import { ReportButton } from "@/modules/moderation/components/report-button";
 import { Breadcrumb } from "@/modules/shared/components/breadcrumb";
 import { ProductViewTracker } from "@/modules/analytics/components/product-view-tracker";
 import { createClient } from "@/lib/supabase/server";
@@ -59,6 +60,7 @@ export default async function ProductoPage({ params }: { params: Promise<{ slug:
             {business?.whatsapp && <WhatsAppButton phone={business.whatsapp} productName={product.name} productId={product.id} businessId={product.business_id} />}
             <FavoriteButton productId={product.id} />
             <ShareButton url={productUrl} title={product.name} />
+            <ReportButton productId={product.id} />
           </div>
         </div>
       </div>

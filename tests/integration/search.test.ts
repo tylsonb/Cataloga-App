@@ -48,10 +48,10 @@ describe("search integration — slugify for search URLs", () => {
 
 describe("search integration — formatPrice for search results", () => {
   it("formats CLP consistently", () => {
-    expect(formatPrice(9990, "CLP")).toBe("$9.990");
+    expect(formatPrice(9990, "CLP")).toBe("🇨🇱 $9.990 CLP");
   });
 
   it("formats USD with US$ prefix", () => {
-    expect(formatPrice(25, "USD")).toBe("US$25");
+    expect(formatPrice(25, "USD")).toBe("🇺🇸 US$25 USD");
   });
 });
