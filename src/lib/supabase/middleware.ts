@@ -26,8 +26,8 @@ export async function updateSession(request: NextRequest) {
   );
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
   const { pathname } = request.nextUrl;
 
@@ -39,20 +39,20 @@ export async function updateSession(request: NextRequest) {
   const isAdminRoute = adminRoutes.some((route) => pathname.startsWith(route));
   const isAuthRoute = authRoutes.includes(pathname);
 
-  if (!user && isProtectedRoute) {
+  if (!session && isProtectedRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("redirect", pathname);
     return NextResponse.redirect(url);
   }
 
-  if (user && isAuthRoute) {
+  if (session && isAuthRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);
   }
 
-  if (isAdminRoute && !user) {
+  if (isAdminRoute && !session) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("redirect", pathname);
