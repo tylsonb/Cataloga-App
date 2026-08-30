@@ -19,6 +19,7 @@ const config: Config = {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          hover: "hsl(var(--primary-hover))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -43,6 +44,16 @@ const config: Config = {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        surface: {
+          DEFAULT: "hsl(var(--surface))",
+          subtle: "hsl(var(--surface-subtle))",
+        },
+        category: {
+          peach: "hsl(var(--cat-peach))",
+          mint: "hsl(var(--cat-mint))",
+          lilac: "hsl(var(--cat-lilac))",
+          lemon: "hsl(var(--cat-lemon))",
         },
       },
       borderRadius: {

@@ -3,6 +3,7 @@ import "@/styles/globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { ServiceWorkerRegister } from "@/components/providers/sw-register";
+import { BottomNav } from "@/components/layout/bottom-nav";
 
 export const metadata: Metadata = {
   title: { default: "Catáloga", template: "%s | Catáloga" },
@@ -28,9 +29,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body>
+      <body className="pb-[calc(56px+env(safe-area-inset-bottom))]">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           {children}
+          <BottomNav />
           <Toaster />
           <ServiceWorkerRegister />
         </ThemeProvider>

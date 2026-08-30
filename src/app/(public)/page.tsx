@@ -13,12 +13,13 @@ export default async function HomePage() {
 
   const [{ data: categories }, { data: featuredProducts }] = await Promise.all([
     supabase.from("categories").select("id, name, slug, icon").eq("is_active", true).order("sort_order"),
-    supabase.from("products").select("id, name, slug, price, currency, business_id, product_images(url)").eq("status", "published").eq("is_featured", true).is("deleted_at", null).order("view_count", { ascending: false }).limit(8),
+    supabase.from("products").select("id, name, slug, price, currency, business_id, category_id, product_images(url), categories(name)").eq("status", "published").eq("is_featured", true).is("deleted_at", null).order("view_count", { ascending: false }).limit(8),
   ]);
 
   const mappedFeatured = (featuredProducts ?? []).map((p) => {
     const images = (p as Record<string, unknown>).product_images as { url: string }[] | undefined;
-    return { ...p, image_url: images?.[0]?.url };
+    const category = (p as Record<string, unknown>).categories as { name: string } | undefined;
+    return { ...p, image_url: images?.[0]?.url, category: category?.name };
   });
 
   return (
@@ -51,7 +52,7 @@ export default async function HomePage() {
             <h2 className="mb-6 text-2xl font-bold">Productos destacados</h2>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {mappedFeatured.map((p) => (
-                <ProductCard key={p.id} name={p.name} slug={p.slug} price={p.price} currency={p.currency} imageUrl={p.image_url} />
+                <ProductCard key={p.id} name={p.name} slug={p.slug} price={p.price} currency={p.currency} imageUrl={p.image_url} category={p.category} />
               ))}
             </div>
           </div>
